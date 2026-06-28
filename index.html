@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>2026 高考智能志愿分析系统（星座版）</title>
+<script src="segment_data.js"></script>
+<script src="school_data.js"></script>
+<script src="major_data.js"></script>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#080c1a;color:#fff;min-height:100vh;overflow-x:hidden;line-height:1.6}
+#starfield{position:fixed;inset:0;z-index:0;pointer-events:none}
+body::after{content:"";position:fixed;inset:0;z-index:1;background:radial-gradient(ellipse at 50% 20%,rgba(120,60,220,0.18) 0%,rgba(8,12,26,0.92) 70%);pointer-events:none}
+.container{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:24px 20px}
+.glass{background:rgba(255,255,255,0.05);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1.5px solid rgba(180,160,255,0.28);border-radius:18px;box-shadow:0 8px 48px rgba(80,40,180,0.15),0 0 60px rgba(140,80,255,0.08)}
+.hero{text-align:center;padding:52px 20px 38px;position:relative;margin-bottom:8px}.hero::before{content:'';position:absolute;inset:-10px;border:2.5px solid;border-color:rgba(180,140,255,0.55);border-radius:60px;pointer-events:none;box-shadow:0 0 60px rgba(140,80,255,0.15),inset 0 0 60px rgba(140,80,255,0.06);animation:heroBorder 4s ease-in-out infinite}@keyframes heroBorder{0%,100%{border-color:rgba(180,140,255,0.55);box-shadow:0 0 60px rgba(140,80,255,0.15),inset 0 0 60px rgba(140,80,255,0.06)}50%{border-color:rgba(140,100,255,0.7);box-shadow:0 0 80px rgba(140,80,255,0.25),inset 0 0 80px rgba(140,80,255,0.1)}}.hero::after{content:'✦ ✦ ✦';position:absolute;top:-18px;left:50%;transform:translateX(-50%);color:#d4a0ff;font-size:18px;letter-spacing:28px;font-weight:700;opacity:1;animation:sparkle 3s ease-in-out infinite;text-shadow:0 0 40px rgba(192,132,252,0.7),0 0 60px rgba(140,80,255,0.3)}@keyframes sparkle{0%,100%{opacity:0.5;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.2);text-shadow:0 0 40px rgba(192,132,252,0.9)}}.hero .corner-star{position:absolute;color:#d4a0ff;font-size:18px;opacity:1;text-shadow:0 0 20px rgba(192,132,252,0.6),0 0 40px rgba(140,80,255,0.2)}.hero .cs1{top:-14px;left:20px;animation:sparkle 2.5s ease-in-out infinite 0.5s}.hero .cs2{top:-14px;right:20px;animation:sparkle 2.5s ease-in-out infinite 1s}.hero .cs3{bottom:-14px;left:30px;animation:sparkle 2.5s ease-in-out infinite 1.5s}.hero .cs4{bottom:-14px;right:30px;animation:sparkle 2.5s ease-in-out infinite 0s}.hero::before{content:'';position:absolute;inset:-4px;border:1.5px solid rgba(140,80,255,0.15);border-radius:60px;pointer-events:none}.hero::after{content:'✦ ✦ ✦';position:absolute;top:-10px;left:50%;transform:translateX(-50%);color:#a78bfa;font-size:11px;letter-spacing:18px;opacity:0.5;animation:sparkle 3s ease-in-out infinite}
+.hero h1{font-size:3.6rem;font-weight:800;letter-spacing:4px;background:linear-gradient(135deg,#f0e6ff 0%,#a78bfa 25%,#60a5fa 50%,#c084fc 75%,#7c3aed 100%);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;animation:gs 6s ease infinite;text-shadow:0 0 80px rgba(140,80,255,0.35)}
+.hero .sub{font-size:1.25rem;font-weight:700;color:#ffffff;letter-spacing:8px;text-shadow:0 0 40px rgba(140,80,255,0.3)}
+.hero .pre{font-size:4.8rem;font-weight:900;background:linear-gradient(135deg,#fff 0%,#e8d8ff 30%,#c084fc 60%,#a78bfa 100%);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gs 4s ease infinite;text-shadow:0 0 100px rgba(192,132,252,0.5),0 0 200px rgba(140,80,255,0.2);letter-spacing:6px;margin-right:6px;display:inline-block;transform:scale(1.05)}
+.mbti-tag{font-size:1.35rem;font-weight:800;margin-top:14px;background:linear-gradient(135deg,#c084fc,#60a5fa,#f472b6,#a78bfa);background-size:300% 300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gs 4s ease infinite;letter-spacing:5px;text-shadow:0 0 60px rgba(192,132,252,0.3),0 0 120px rgba(140,80,255,0.1)}
+@keyframes gs{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes fiu{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.fade-in{animation:fiu 0.6s ease both}.fade-in-delay{animation:fiu 0.7s ease both}
+.form-card{padding:40px 36px;margin-bottom:22px}
+.form-group{margin-bottom:22px}
+.form-group label{display:block;font-size:.85rem;font-weight:700;color:#fff;margin-bottom:8px;letter-spacing:.8px;text-shadow:0 0 12px rgba(140,80,255,0.12)}
+select,input[type=number]{width:100%;padding:14px 16px;background:rgba(255,255,255,0.06);border:2px solid rgba(180,160,255,0.35);border-radius:12px;color:#fff;font-size:.95rem;font-family:inherit;font-weight:600;outline:none;transition:all .35s;box-shadow:inset 0 2px 8px rgba(0,0,0,0.15)}
+select option{background:#14142e;color:#f0e8ff;font-weight:600}
+select:focus,input[type=number]:focus{border-color:rgba(140,80,255,0.5);box-shadow:0 0 20px rgba(140,80,255,0.08),inset 0 2px 8px rgba(0,0,0,0.15)}
+.radio-group{display:flex;gap:12px}
+.radio-group label{flex:1;padding:14px 12px;text-align:center;cursor:pointer;border-radius:12px;background:rgba(255,255,255,0.04);border:2px solid rgba(180,160,255,0.25);font-weight:700;color:#f0e8ff;transition:all .35s;font-size:.92rem;letter-spacing:2px;backdrop-filter:blur(8px)}
+.radio-group input{display:none}
+.radio-group input:checked+label{background:linear-gradient(135deg,rgba(140,80,255,0.15),rgba(140,80,255,0.05));border-color:rgba(140,80,255,0.7);color:#fff;box-shadow:0 0 40px rgba(140,80,255,0.20),0 0 80px rgba(140,80,255,0.06);transform:scale(1.02)}
+.radio-group label:hover{border-color:rgba(180,160,255,0.40);background:rgba(255,255,255,0.08)}
+.tag-group{display:flex;flex-wrap:wrap;gap:10px}
+.tag-item input,.interest-item input{display:none}
+.tag-item label{display:inline-block;padding:9px 20px;border-radius:22px;cursor:pointer;background:rgba(255,255,255,0.04);border:2px solid rgba(180,160,255,0.25);color:#f0e8ff;font-weight:600;font-size:.88rem;transition:all .35s;backdrop-filter:blur(8px);letter-spacing:.5px}
+.tag-item label:hover{border-color:rgba(180,160,255,0.40);background:rgba(255,255,255,0.09);transform:translateY(-1px)}
+.tag-item input:checked+label{background:linear-gradient(135deg,rgba(140,80,255,0.2),rgba(6,182,212,0.12));border-color:rgba(140,80,255,0.7);color:#fff;box-shadow:0 0 30px rgba(140,80,255,0.18);transform:translateY(-1px)}
+.interest-group{display:flex;flex-wrap:wrap;gap:10px}
+.interest-item label{display:inline-block;padding:8px 18px;border-radius:20px;cursor:pointer;background:rgba(255,255,255,0.03);border:2px solid rgba(180,160,255,0.20);color:#e8e0f0;font-weight:600;font-size:.85rem;transition:all .35s;backdrop-filter:blur(8px);letter-spacing:.5px}
+.interest-item label:hover{border-color:rgba(6,182,212,0.35);background:rgba(6,182,212,0.06);transform:translateY(-1px)}
+.interest-item input:checked+label{background:linear-gradient(135deg,rgba(140,80,255,0.14),rgba(6,182,212,0.10));border-color:rgba(6,182,212,0.6);color:#fff;box-shadow:0 0 30px rgba(6,182,212,0.15);transform:translateY(-1px)}
+/* MBTI选择器 */
+.mbti-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mbti-dim{background:rgba(255,255,255,0.03);border-radius:12px;padding:12px;border:1.5px solid rgba(180,160,255,0.15)}
+.mbti-dim-label{display:block;font-size:.72rem;font-weight:700;color:#c0a8e0;margin-bottom:8px;letter-spacing:1px}
+.mbti-options{display:flex;gap:6px}
+.mbti-opt{flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid rgba(180,160,255,0.12);background:rgba(255,255,255,0.02);cursor:pointer;text-align:center;transition:all .3s;font-size:.72rem;font-weight:600;color:#b0a0c8;display:flex;align-items:center;justify-content:center}
+.mbti-opt .mbti-radio{display:none}
+.mbti-opt:hover{border-color:rgba(140,80,255,0.3);color:#e0d0f0}
+.mbti-opt:has(input:checked){border-color:rgba(192,132,252,0.5);background:linear-gradient(135deg,rgba(140,80,255,0.12),rgba(6,182,212,0.06));color:#fff;box-shadow:0 0 15px rgba(140,80,255,0.08)}
+@media(max-width:600px){.mbti-selector{grid-template-columns:1fr}}
+.btn-primary{display:block;width:100%;padding:24px;border:none;border-radius:14px;color:#fff;font-size:1.25rem;font-weight:800;letter-spacing:8px;cursor:pointer;font-family:inherit;position:relative;z-index:1;overflow:hidden;transition:all .4s;background:linear-gradient(135deg,#0d0a1e,#0a0f1a)}.btn-primary::before{content:'';position:absolute;inset:-3px;z-index:-1;border-radius:18px;background:conic-gradient(#a78bfa,#06b6d4,#c084fc,#f472b6,#818cf8,#a78bfa);background-size:400% 400%;animation:borderRotate 3s linear infinite;padding:3px;-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude}.btn-primary::after{content:'';position:absolute;inset:3px;z-index:-1;border-radius:12px;background:linear-gradient(135deg,#1a0a3e,#0a1628);opacity:0.95;box-shadow:inset 0 0 30px rgba(140,80,255,0.15)}@keyframes borderRotate{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}.btn-primary:hover{transform:translateY(-4px)}.btn-primary:hover::after{background:linear-gradient(135deg,#8b4cf7,#0ec8e6)}.btn-primary:active{transform:translateY(-1px)}
+.btn-ghost{display:inline-block;padding:12px 28px;border:2px solid rgba(180,160,255,0.32);border-radius:10px;background:rgba(255,255,255,0.03);color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all .35s;backdrop-filter:blur(8px)}
+.btn-ghost:hover{border-color:rgba(140,80,255,0.55);background:rgba(140,80,255,0.08);transform:translateY(-2px);box-shadow:0 4px 20px rgba(140,80,255,0.12)}
+.query-btn{text-align:center;margin-bottom:22px}
+.query-btn button{background:none;border:2px solid rgba(180,160,255,0.30);border-radius:22px;color:#f0e8ff;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;padding:9px 22px;transition:all .35s;backdrop-filter:blur(8px);letter-spacing:1px}
+.query-btn button:hover{color:#fff;border-color:rgba(140,80,255,0.6);background:rgba(140,80,255,0.08);transform:translateY(-2px);box-shadow:0 4px 20px rgba(140,80,255,0.12)}
+#resultPage{display:none}
+.summary-bar{display:flex;flex-wrap:wrap;gap:8px 24px;padding:18px 24px;margin-bottom:20px;align-items:center;justify-content:center}
+.summary-item{display:flex;align-items:center;gap:6px;font-size:.92rem;font-weight:700;color:#fff}
+.summary-item .l{color:#e0d8f0;font-weight:600;font-size:.82rem}
+.chart-wrap{position:relative;padding:20px;margin-bottom:20px;min-height:380px;border-radius:16px}
+#chartCanvas{width:100%;height:340px;border-radius:8px;cursor:crosshair;touch-action:none;display:block}
+.chart-tip{position:absolute;display:none;padding:12px 16px;background:rgba(10,14,30,0.95);backdrop-filter:blur(16px);border:1.5px solid rgba(180,160,255,0.35);border-radius:10px;font-size:.82rem;color:#fff;pointer-events:none;z-index:10;box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 40px rgba(140,80,255,0.08);min-width:130px}
+.chart-tip .tl{display:flex;justify-content:space-between;gap:12px;padding:3px 0;font-weight:600}
+.chart-tip .ll{color:#e0d0f0;font-weight:500}.chart-tip .vl{color:#fff;font-weight:700}
+.usl{position:absolute;top:20px;bottom:60px;width:2px;background:rgba(255,200,100,0.5);pointer-events:none;z-index:5;display:none;box-shadow:0 0 12px rgba(255,200,100,0.15)}
+.school-section{margin-bottom:28px}
+.section-title{font-size:1.15rem;font-weight:800;color:#fff;text-shadow:0 0 24px rgba(140,80,255,0.18);margin-bottom:14px;letter-spacing:.8px;display:flex;align-items:center;gap:6px}
+.section-title .d{color:#a78bfa;font-size:1rem}
+.school-grid{display:grid;gap:12px}
+.school-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(18px);border:1.5px solid rgba(180,160,255,0.22);border-radius:14px;padding:16px 20px;cursor:pointer;transition:all .35s;overflow:hidden}
+.school-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(120,80,255,0.20),0 0 40px rgba(140,80,255,0.08);border-color:rgba(180,160,255,0.38)}
+.scr{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sn{font-size:1rem;font-weight:700;color:#fff;flex:1;min-width:80px;letter-spacing:.3px}
+.sl{font-size:.7rem;padding:3px 10px;border-radius:6px;background:rgba(140,80,255,0.12);border:1.5px solid rgba(140,80,255,0.25);color:#f0efff;font-weight:700;white-space:nowrap}
+.sb{font-size:.75rem;font-weight:800;padding:4px 12px;border-radius:16px;letter-spacing:1px;white-space:nowrap}
+.sb-c{background:rgba(200,50,100,0.2);color:#ff80a0;border:1px solid rgba(200,50,100,0.25)}
+.sb-w{background:rgba(50,120,220,0.2);color:#80b8ff;border:1px solid rgba(50,120,220,0.25)}
+.sb-b{background:rgba(0,180,120,0.2);color:#60e0b0;border:1px solid rgba(0,180,120,0.25)}
+.sp{font-size:.85rem;font-weight:700;color:#e8e0f0;white-space:nowrap}
+.sr{font-size:.8rem;color:#d8d0e8;font-weight:600}
+.sr span{color:#fff;font-weight:700}
+.ml{max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1)}
+.ml.open{max-height:3000px}
+.mli{padding-top:12px;border-top:1px solid rgba(180,160,255,0.18);margin-top:10px}
+.modal-overlay{position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.75);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;animation:fiu .3s ease}
+.modal-content{background:rgba(15,20,40,0.94);backdrop-filter:blur(30px);border:2px solid rgba(180,160,255,0.30);border-radius:20px;padding:36px;max-width:500px;width:90%;position:relative;box-shadow:0 20px 80px rgba(0,0,0,0.5),0 0 60px rgba(140,80,255,0.08)}
+.modal-close{position:absolute;top:14px;right:18px;font-size:1.5rem;color:#e0d0f0;cursor:pointer;background:none;border:none;font-family:inherit;transition:all .3s;line-height:1;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.modal-close:hover{color:#fff;background:rgba(255,255,255,0.05)}
+.modal-content h2{font-size:1.35rem;font-weight:800;color:#fff;margin-bottom:20px;letter-spacing:1.5px}
+.modal-result{margin-top:16px;display:none}
+.mr-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.mr-item{text-align:center;padding:14px 8px;border-radius:12px;background:rgba(255,255,255,0.03);border:1.5px solid rgba(180,160,255,0.18)}
+.mr-num{font-size:2.6rem;font-weight:800;background:linear-gradient(135deg,#c084fc,#90e0ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.mr-label{font-size:.85rem;color:#d8d0e8;font-weight:600;margin-top:4px}
+#loadingOverlay{position:fixed;inset:0;z-index:100;display:none;background:rgba(8,12,26,0.88);backdrop-filter:blur(10px);align-items:center;justify-content:center;flex-direction:column;gap:18px}
+.lr{width:48px;height:48px;border:3px solid rgba(140,80,255,0.10);border-top-color:#a78bfa;border-radius:50%;animation:spin .8s linear infinite}
+.lt{font-size:1rem;font-weight:700;color:#fff;letter-spacing:3px}
+.toast{position:fixed;top:24px;left:50%;transform:translateX(-50%);z-index:200;padding:12px 24px;background:rgba(200,50,80,0.88);backdrop-filter:blur(12px);border:1px solid rgba(255,100,100,0.2);border-radius:10px;color:#fff;font-size:.85rem;font-weight:700;opacity:0;transition:opacity .4s;pointer-events:none;box-shadow:0 8px 32px rgba(200,50,80,0.2)}
+.toast.show{opacity:1}
+.bottom-bar{display:flex;gap:14px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.svstat{text-align:center;padding:8px;font-size:.78rem;font-weight:600;margin-bottom:10px;color:#e8e0f0}
+@media(max-width:640px){.hero h1{font-size:2.4rem;letter-spacing:2px}.hero .sub{font-size:1.05rem;letter-spacing:4px}.form-card{padding:24px 16px}.radio-group{flex-direction:column;gap:8px}#chartCanvas{height:260px}.modal-content{padding:28px;width:94%}.mr-num{font-size:2.2rem}}
+
+.result-layout{display:flex;gap:22px;align-items:flex-start}
+.result-main{flex:1;min-width:0}
+.result-side{width:320px;flex-shrink:0}
+.personality-card{background:rgba(255,255,255,0.04);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1.5px solid rgba(180,160,255,0.22);border-radius:18px;padding:24px 22px;position:relative;overflow:hidden}
+./* 星座样式 */\n.zodiac-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(180,160,255,0.12);border-radius:14px}\n.zodiac-symbol{font-size:2.8rem;line-height:1;color:#c084fc;text-shadow:0 0 30px rgba(192,132,252,0.3)}\n.zodiac-info{flex:1}\n.zodiac-name{font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:2px}\n.zodiac-sub{font-size:.7rem;color:#b0a0c8;font-weight:500;margin-top:2px}\npersonality-card::before{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;background:radial-gradient(circle,rgba(140,80,255,0.08),transparent 70%);pointer-events:none;border-radius:50%}
+.personality-card::after{content:'';position:absolute;bottom:-40px;left:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(6,182,212,0.06),transparent 70%);pointer-events:none;border-radius:50%}
+.per-title{font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:2px;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.per-title .icon{color:#c084fc;font-size:1.2rem}
+/* 星座样式 */
+.per-tabs{display:flex;gap:6px;margin-bottom:12px}
+.per-tab{flex:1;padding:8px 0;border-radius:10px;border:1.5px solid rgba(180,160,255,0.15);background:rgba(255,255,255,0.02);color:#b0a0c8;font-size:.78rem;font-weight:600;cursor:pointer;transition:all .35s;font-family:inherit;letter-spacing:1px}
+.per-tab:hover{border-color:rgba(140,80,255,0.3);color:#e0d0f0}
+.per-tab.active{background:linear-gradient(135deg,rgba(140,80,255,0.12),rgba(6,182,212,0.06));border-color:rgba(140,80,255,0.4);color:#fff;box-shadow:0 0 20px rgba(140,80,255,0.08)}
+.per-tab-content{animation:fiu .3s ease}
+.zodiac-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;padding:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(180,160,255,0.12);border-radius:14px}
+.zodiac-symbol{font-size:2.8rem;line-height:1;color:#c084fc;text-shadow:0 0 30px rgba(192,132,252,0.3)}
+.zodiac-info{flex:1}
+.zodiac-name{font-size:1.1rem;font-weight:800;color:#fff;letter-spacing:2px}
+.zodiac-sub{font-size:.7rem;color:#b0a0c8;font-weight:500;margin-top:2px}
+.zodiac-traits{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.zodiac-desc{font-size:.8rem;color:#c0b0d8;line-height:1.7;font-weight:500;padding:10px 0;border-top:1px solid rgba(180,160,255,0.08)}
+.zodiac-mbti{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.zodiac-mbti-item{padding:6px 14px;border-radius:12px;font-size:.78rem;font-weight:700;background:linear-gradient(135deg,rgba(192,132,252,0.12),rgba(96,165,250,0.08));border:1px solid rgba(192,132,252,0.25);color:#d0b8f0}
+.zodiac-majors{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.zodiac-famous{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.zodiac-famous-item{padding:5px 12px;border-radius:10px;font-size:.75rem;font-weight:600;color:#c0b0d8;background:rgba(255,255,255,0.03);border:1px solid rgba(180,160,255,0.08)}
+.per-type{text-align:center;padding:18px 10px;margin-bottom:16px;background:rgba(140,80,255,0.08);border:1px solid rgba(140,80,255,0.18);border-radius:14px;position:relative}
+.per-type-code{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#c084fc,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:6px}
+.per-type-name{font-size:.85rem;color:#d0c0e8;font-weight:600;margin-top:4px}
+.per-traits{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.per-trait{padding:4px 12px;border-radius:14px;font-size:.75rem;font-weight:600;background:rgba(180,160,255,0.08);border:1px solid rgba(180,160,255,0.12);color:#d0c0e8}
+.per-section-title{font-size:.82rem;font-weight:700;color:#e0d0f0;margin-bottom:8px;letter-spacing:1px;margin-top:4px}
+.per-careers{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.per-career{padding:5px 14px;border-radius:16px;font-size:.78rem;font-weight:600;background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(140,80,255,0.08));border:1px solid rgba(6,182,212,0.15);color:#b0d8f0}\n.per-majors{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}\n.per-major{padding:5px 14px;border-radius:16px;font-size:.78rem;font-weight:600;background:linear-gradient(135deg,rgba(192,132,252,0.12),rgba(96,165,250,0.08));border:1px solid rgba(192,132,252,0.2);color:#d0b8f0}
+.per-desc{font-size:.8rem;color:#c0b0d8;line-height:1.7;font-weight:500;padding:10px 0;border-top:1px solid rgba(180,160,255,0.08)}
+.per-score-bar{margin-top:12px}
+.per-score-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.per-score-label{font-size:.72rem;font-weight:600;color:#b0a0c8;width:44px;flex-shrink:0;text-align:right}
+.per-score-track{flex:1;height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden;position:relative}
+.per-score-fill{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.per-score-fill.purple{background:linear-gradient(90deg,#7c3aed,#c084fc)}
+.per-score-fill.blue{background:linear-gradient(90deg,#2563eb,#60a5fa)}
+.per-score-fill.teal{background:linear-gradient(90deg,#0d9488,#5eead4)}
+.per-score-fill.pink{background:linear-gradient(90deg,#db2777,#f472b6)}
+.per-score-val{font-size:.7rem;font-weight:700;color:#e0d0f0;width:26px;text-align:right}
+@media(max-width:860px){.result-layout{flex-direction:column}.result-side{width:100%}}
+
+.hero-wrap{display:flex;align-items:stretch;gap:16px;margin-bottom:8px}
+.hero-main{flex:1;min-width:0}
+.plan-sidebar{width:200px;flex-shrink:0;display:flex;align-items:stretch}
+.plan-sidebar-btn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid rgba(180,160,255,0.35);border-radius:18px;cursor:pointer;transition:all .4s;padding:18px 10px;gap:6px;position:relative;overflow:hidden;min-height:100px}
+.plan-sidebar-btn:hover{transform:translateY(-3px);border-color:rgba(140,80,255,0.6);box-shadow:0 8px 40px rgba(120,80,255,0.20),0 0 60px rgba(140,80,255,0.12)}
+.plan-sidebar-btn::before{content:"";position:absolute;top:-30px;right:-30px;width:80px;height:80px;background:radial-gradient(circle,rgba(140,80,255,0.06),transparent 70%);pointer-events:none;border-radius:50%}
+.plan-sidebar-icon{font-size:2rem;color:#c084fc;text-shadow:0 0 30px rgba(192,132,252,0.3)}
+.plan-sidebar-text{font-size:.8rem;font-weight:700;color:#fff;letter-spacing:1px;text-align:center;line-height:1.4}
+.plan-sidebar-sub{font-size:.65rem;color:#b0a0c8;font-weight:600;text-align:center}
+#planModal{position:fixed;inset:0;z-index:999;background:rgba(8,12,26,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);display:none;flex-direction:column;animation:fiu .4s ease;overflow:hidden}
+#planModal.open{display:flex}
+.plan-header{display:flex;align-items:center;justify-content:space-between;padding:20px 32px;border-bottom:1px solid rgba(180,160,255,0.15);flex-shrink:0}
+.plan-header h2{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#c084fc,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px}
+.plan-close{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid rgba(180,160,255,0.25);color:#e0d0f0;font-size:1.5rem;cursor:pointer;transition:all .3s;font-family:inherit}
+.plan-close:hover{background:rgba(180,160,255,0.12);color:#fff}
+.plan-search{padding:16px 32px;border-bottom:1px solid rgba(180,160,255,0.08);flex-shrink:0}
+.plan-search input{width:100%;max-width:400px;padding:12px 20px;background:rgba(255,255,255,0.06);border:2px solid rgba(180,160,255,0.25);border-radius:30px;color:#fff;font-size:.9rem;font-weight:600;font-family:inherit;outline:none;transition:all .35s}
+.plan-search input:focus{border-color:rgba(140,80,255,0.5);box-shadow:0 0 20px rgba(140,80,255,0.08)}
+.plan-search input::placeholder{color:#605080;font-weight:500}
+.plan-grid-wrap{flex:1;overflow-y:auto;padding:20px 32px}
+.plan-grid-wrap::-webkit-scrollbar{width:6px}
+.plan-grid-wrap::-webkit-scrollbar-thumb{background:rgba(180,160,255,0.2);border-radius:3px}
+.plan-grid{display:flex;flex-wrap:wrap;gap:8px}
+.plan-major-btn{padding:9px 18px;border-radius:20px;background:rgba(255,255,255,0.04);border:1.5px solid rgba(180,160,255,0.20);color:#f0e8ff;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .3s;font-family:inherit;white-space:nowrap}
+.plan-major-btn:hover{background:rgba(140,80,255,0.1);border-color:rgba(140,80,255,0.4);transform:translateY(-1px);box-shadow:0 4px 16px rgba(140,80,255,0.1)}
+.plan-major-btn.active{background:linear-gradient(135deg,rgba(140,80,255,0.2),rgba(6,182,212,0.1));border-color:rgba(140,80,255,0.6);color:#fff;box-shadow:0 0 20px rgba(140,80,255,0.15)}
+.plan-detail-panel{flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .5s cubic-bezier(.4,0,.2,1);border-top:1px solid rgba(180,160,255,0.08)}
+.plan-detail-panel.open{max-height:2000px}
+.plan-detail-inner{padding:24px 32px;background:rgba(255,255,255,0.02)}
+.plan-detail-title{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:16px;letter-spacing:1px}
+.plan-detail-title span{background:linear-gradient(135deg,#c084fc,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.plan-detail-section{margin-bottom:18px}
+.plan-detail-section h3{font-size:.9rem;font-weight:700;color:#c084fc;margin-bottom:8px;letter-spacing:1px;display:flex;align-items:center;gap:6px}
+.plan-detail-section h3::before{content:"\2726";font-size:.7rem}
+.plan-detail-section p{font-size:.85rem;color:#e0d8f0;line-height:1.8;font-weight:500;padding:10px 14px;background:rgba(255,255,255,0.02);border-radius:10px;border:1px solid rgba(180,160,255,0.08)}
+@media(max-width:860px){.hero-wrap{flex-direction:column}.plan-sidebar{width:100%}.plan-sidebar-btn{flex-direction:row;min-height:60px;padding:12px 16px}.plan-sidebar-icon{font-size:1.3rem}.plan-header{padding:14px 16px}.plan-grid-wrap{padding:14px 16px}.plan-detail-inner{padding:16px}}
+@media(max-width:640px){.plan-grid{gap:6px}.plan-major-btn{padding:7px 14px;font-size:.78rem;white-space:normal}}
+</style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<div class="toast" id="toast"></div>
+<div id="loadingOverlay"><div class="lr"></div><div class="lt">智能分析中...</div></div>
+<div class="container">
+<div class="hero-wrap" style="animation:fiu 0.6s ease both;animation-delay:0.1s"><div class="hero-main"><div class="hero fade-in" style="animation:none"><span class="corner-star cs1">✦</span><span class="corner-star cs2">✦</span><span class="corner-star cs3">✦</span><span class="corner-star cs4">✦</span><h1><span class="pre">必上</span>高考智能志愿分析（星座版）</h1><div class="sub">2026 · 让每一分都闪光</div><div class="mbti-tag">✦ 结合MBTI人格测试</div></div></div>
+<div class="plan-sidebar"><div class="plan-sidebar-btn" onclick="openPlanModal()">
+<div class="plan-sidebar-icon">📋</div>
+<div class="plan-sidebar-text">各专业未来规划</div>
+<div class="plan-sidebar-sub">学长学姐来时路</div>
+</div></div>
+</div>
+<div class="glass form-card fade-in" id="formCard" style="margin-top:0">
+  <div class="form-group"><label>选择省份</label><select id="province"><option value="">请选择省份</option><option value="北京市">北京市</option><option value="天津市">天津市</option><option value="上海市">上海市</option><option value="重庆市">重庆市</option><option value="河北省">河北省</option><option value="山西省">山西省</option><option value="辽宁省">辽宁省</option><option value="吉林省">吉林省</option><option value="黑龙江省">黑龙江省</option><option value="江苏省">江苏省</option><option value="浙江省">浙江省</option><option value="安徽省">安徽省</option><option value="福建省">福建省</option><option value="江西省">江西省</option><option value="山东省">山东省</option><option value="河南省">河南省</option><option value="湖北省">湖北省</option><option value="湖南省">湖南省</option><option value="广东省">广东省</option><option value="广西省">广西省</option><option value="海南省">海南省</option><option value="四川省">四川省</option><option value="贵州省">贵州省</option><option value="云南省">云南省</option><option value="西藏省">西藏省</option><option value="陕西省">陕西省</option><option value="甘肃省">甘肃省</option><option value="青海省">青海省</option><option value="宁夏省">宁夏省</option><option value="新疆省">新疆省</option><option value="内蒙古省">内蒙古省</option></select></div>
+  <div class="form-group"><label>高考分数</label><input type="number" id="score" min="0" max="750" placeholder="输入你的分数（0-750）" autocomplete="off"></div>
+  <div class="form-group"><label>首选科目</label><div class="radio-group"><input type="radio" name="subj" value="物理" id="sp"><label for="sp">物理</label><input type="radio" name="subj" value="历史" id="sh"><label for="sh">历史</label></div></div>
+</div>
+  <div class="form-group"><label>性别</label><div class="radio-group"><input type="radio" name="gender" value="男" id="gm"><label for="gm">男生</label><input type="radio" name="gender" value="女" id="gf"><label for="gf">女生</label></div>
+  <div class="form-group"><label>出生日期（选填）</label><input type="date" id="birthday" max="2008-12-31" min="2006-01-01" value="" style="width:100%;padding:14px 16px;background:rgba(255,255,255,0.04);border:2px solid rgba(180,160,255,0.25);border-radius:12px;color:#fff;font-size:.88rem;font-weight:600;font-family:inherit;outline:none;transition:all .35s;box-sizing:border-box;-webkit-appearance:none;appearance:none;color-scheme:dark"><div style="font-size:.7rem;color:#b0a0c8;font-weight:500;margin-top:4px">用于星座分析，不会影响志愿推荐结果</div></div>
+  <div class="form-group"><label>再选科目（选两门）</label><div class="tag-group" id="ss"><div class="tag-item"><input type="checkbox" value="政治" id="s1"><label for="s1">政治</label></div><div class="tag-item"><input type="checkbox" value="生物" id="s2"><label for="s2">生物</label></div><div class="tag-item"><input type="checkbox" value="地理" id="s3"><label for="s3">地理</label></div><div class="tag-item"><input type="checkbox" value="化学" id="s4"><label for="s4">化学</label></div></div></div>
+  <div class="form-group"><label>兴趣方向（可多选）</label><div class="interest-group" id="interests"><div class="interest-item"><input type="checkbox" value="计算机" id="i1"><label for="i1">计算机</label></div><div class="interest-item"><input type="checkbox" value="人工智能" id="i2"><label for="i2">人工智能</label></div><div class="interest-item"><input type="checkbox" value="电气" id="i3"><label for="i3">电气</label></div><div class="interest-item"><input type="checkbox" value="自动化" id="i4"><label for="i4">自动化</label></div><div class="interest-item"><input type="checkbox" value="机械" id="i5"><label for="i5">机械</label></div><div class="interest-item"><input type="checkbox" value="中文" id="i6"><label for="i6">中文</label></div><div class="interest-item"><input type="checkbox" value="财经" id="i7"><label for="i7">财经</label></div><div class="interest-item"><input type="checkbox" value="法学" id="i8"><label for="i8">法学</label></div></div></div>
+  <div class="form-group"><label>MBTI人格（选填，不选则自动分析）</label><div class="mbti-selector">
+    <div class="mbti-dim"><span class="mbti-dim-label">精力</span><div class="mbti-options"><label class="mbti-opt" data-val="I"><input type="radio" name="mbti1" value="I" class="mbti-radio"><span>I 内向</span></label><label class="mbti-opt" data-val="E"><input type="radio" name="mbti1" value="E" class="mbti-radio"><span>E 外向</span></label></div></div>
+    <div class="mbti-dim"><span class="mbti-dim-label">认知</span><div class="mbti-options"><label class="mbti-opt" data-val="S"><input type="radio" name="mbti2" value="S" class="mbti-radio"><span>S 实感</span></label><label class="mbti-opt" data-val="N"><input type="radio" name="mbti2" value="N" class="mbti-radio"><span>N 直觉</span></label></div></div>
+    <div class="mbti-dim"><span class="mbti-dim-label">判断</span><div class="mbti-options"><label class="mbti-opt" data-val="T"><input type="radio" name="mbti3" value="T" class="mbti-radio"><span>T 理性</span></label><label class="mbti-opt" data-val="F"><input type="radio" name="mbti3" value="F" class="mbti-radio"><span>F 感性</span></label></div></div>
+    <div class="mbti-dim"><span class="mbti-dim-label">态度</span><div class="mbti-options"><label class="mbti-opt" data-val="J"><input type="radio" name="mbti4" value="J" class="mbti-radio"><span>J 计划</span></label><label class="mbti-opt" data-val="P"><input type="radio" name="mbti4" value="P" class="mbti-radio"><span>P 灵活</span></label></div></div>
+  </div></div>
+  <button class="btn-primary" onclick="start()">开始分析</button>
+</div>
+<div class="query-btn fade-in"><button onclick="openSeg()">📊 一分一段表查询</button></div>
+<div id="resultPage">
+  <div class="svstat" id="svStatus">检测数据服务...</div>
+  <div class="result-layout">
+    <div class="result-main">
+      <div class="glass summary-bar fade-in" id="summaryBar"></div>
+      <div class="glass chart-wrap fade-in" id="chartWrap"><canvas id="chartCanvas"></canvas><div class="usl" id="usl"></div><div class="chart-tip" id="tip"></div></div>
+      <div class="school-section fade-in" id="ipS" style="display:none"><div class="section-title"><span class="d">✦</span>省内高校推荐</div><div class="school-grid" id="ipG"></div></div>
+      <div class="school-section fade-in" id="opS" style="display:none"><div class="section-title"><span class="d">✦</span>省外高校推荐</div><div class="school-grid" id="opG"></div></div>
+      <div class="bottom-bar"><button class="btn-ghost" onclick="back()">← 返回修改</button></div>
+    </div>
+    <div class="result-side">
+      <div class="personality-card fade-in" id="personalityCard">
+        <div class="per-title"><span class="icon">✦</span>性格分析</div>
+        <div class="per-tabs"><button class="per-tab active" data-tab="mbti" onclick="switchPerTab('mbti')">📋 MBTI</button><button class="per-tab" data-tab="zodiac" onclick="switchPerTab('zodiac')">⭐ 星座</button></div>
+        <div class="per-tab-content" id="perContent"><div style="text-align:center;padding:30px 0;color:#b0a0c8;font-size:.82rem;font-weight:500">分析完成后展示</div></div>
+        <div class="per-tab-content" id="zodiacContent" style="display:none"><div style="text-align:center;padding:30px 0;color:#b0a0c8;font-size:.82rem;font-weight:500">请填写出生日期获取星座分析</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div class="modal-overlay" id="segModal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeSeg()">&times;</button>
+    <h2>📊 一分一段查询</h2>
+    <div class="form-group"><label>省份</label><select id="segP"><option value="">请选择省份</option><option value="北京市">北京市</option><option value="天津市">天津市</option><option value="上海市">上海市</option><option value="重庆市">重庆市</option><option value="河北省">河北省</option><option value="山西省">山西省</option><option value="辽宁省">辽宁省</option><option value="吉林省">吉林省</option><option value="黑龙江省">黑龙江省</option><option value="江苏省">江苏省</option><option value="浙江省">浙江省</option><option value="安徽省">安徽省</option><option value="福建省">福建省</option><option value="江西省">江西省</option><option value="山东省">山东省</option><option value="河南省">河南省</option><option value="湖北省">湖北省</option><option value="湖南省">湖南省</option><option value="广东省">广东省</option><option value="广西省">广西省</option><option value="海南省">海南省</option><option value="四川省">四川省</option><option value="贵州省">贵州省</option><option value="云南省">云南省</option><option value="西藏省">西藏省</option><option value="陕西省">陕西省</option><option value="甘肃省">甘肃省</option><option value="青海省">青海省</option><option value="宁夏省">宁夏省</option><option value="新疆省">新疆省</option><option value="内蒙古省">内蒙古省</option></select></div>
+    <div class="form-group"><label>分数</label><input type="number" id="segSc" min="0" max="750" placeholder="输入分数"></div>
+    <div class="form-group"><label>科目</label><div class="radio-group">
+      <label id="sl0" style="flex:1;padding:10px;background:rgba(140,80,255,0.08);border:1px solid rgba(140,80,255,0.4);border-radius:8px;text-align:center;cursor:pointer;font-weight:700;color:#fff;font-size:.82rem"><input type="radio" name="segSubj" value="combined" checked style="display:none" onchange="updSeg()">综合</label>
+      <label id="sl1" style="flex:1;padding:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(180,160,255,0.10);border-radius:8px;text-align:center;cursor:pointer;font-weight:500;color:#c0b0d8;font-size:.82rem"><input type="radio" name="segSubj" value="历史" style="display:none" onchange="updSeg()">历史</label>
+      <label id="sl2" style="flex:1;padding:10px;background:rgba(255,255,255,0.03);border:1px solid rgba(180,160,255,0.10);border-radius:8px;text-align:center;cursor:pointer;font-weight:500;color:#c0b0d8;font-size:.82rem"><input type="radio" name="segSubj" value="物理" style="display:none" onchange="updSeg()">物理</label>
+    </div></div>
+    <button class="btn-primary" style="padding:12px;font-size:.9rem;margin-top:4px" onclick="qSeg()">查询</button>
+    <div class="modal-result" id="segRes"><div class="mr-grid"><div class="mr-item glass"><div class="mr-num" id="segC">-</div><div class="mr-label">累计排名</div></div><div class="mr-item glass"><div class="mr-num" id="segN">-</div><div class="mr-label">同分人数</div></div><div class="mr-item glass"><div class="mr-num" id="segT">-</div><div class="mr-label">总考生数</div></div></div></div>
+  </div>
+</div>
+<script>
+
+var PROV_CODE_MAP={};
+(function(){var map={"???":11,"???":12,"???":31,"???":50,"???":13,"???":14,"???":21,"???":22,"????":23,"???":32,"???":33,"???":34,"???":35,"???":36,"???":37,"???":41,"???":42,"???":43,"???":44,"???":45,"???":46,"???":51,"???":52,"???":53,"???":54,"???":61,"???":62,"???":63,"???":64,"???":65,"????":15};Object.assign(PROV_CODE_MAP,map)})();
+
+var PROV_CODE_MAP={};
+(function(){var map={"???":11,"???":12,"???":31,"???":50,"???":13,"???":14,"???":21,"???":22,"????":23,"???":32,"???":33,"???":34,"???":35,"???":36,"???":37,"???":41,"???":42,"???":43,"???":44,"???":45,"???":46,"???":51,"???":52,"???":53,"???":54,"???":61,"???":62,"???":63,"???":64,"???":65,"????":15};Object.assign(PROV_CODE_MAP,map)})();
+var PROVINCES=["北京市","天津市","上海市","重庆市","河北省","山西省","辽宁省","吉林省","黑龙江省","江苏省","浙江省","安徽省","福建省","江西省","山东省","河南省","湖北省","湖南省","广东省","广西省","海南省","四川省","贵州省","云南省","西藏省","陕西省","甘肃省","青海省","宁夏省","新疆省","内蒙古省"];
+var chData=null,svOk=false;
+
+function gs(p,s){if(!p||!s||!window.SEGMENT_DATA)return null;var pd=SEGMENT_DATA[p];if(!pd)return null;return pd[s]||pd.combined||null}
+function gr(p,sc,s){var d=gs(p,s);if(!d)return -1;sc=Math.max(0,Math.min(750,Math.round(sc)));for(var i=0;i<d.length;i++)if(d[i][0]<=sc)return d[i][1];return d.length?d[d.length-1][1]:-1}
+function gd(p,sc,s){
+  var d=gs(p,s);if(!d)return null;sc=Math.max(0,Math.min(750,Math.round(sc)));
+  for(var i=0;i<d.length;i++){if(d[i][0]===sc){var pv=i>0?d[i-1]:null;return {score:sc,cnt:pv?d[i][1]-pv[1]:d[i][1],cum:d[i][1]}}}
+  for(var i=0;i<d.length;i++){if(d[i][0]<sc){var pv=i>0?d[i-1]:null;return {score:sc,cnt:pv?Math.round((d[i][1]-pv[1])/2):d[i][1],cum:d[i][1]}}}
+  return null
+}
+function gsubj(){return document.getElementById('sp').checked?'物理':document.getElementById('sh').checked?'历史':'combined'}
+function ss2(){var r=[];document.querySelectorAll('#ss input:checked').forEach(function(c){r.push(c.value)});return r}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='toast show';clearTimeout(t._timer);t._timer=setTimeout(function(){t.className='toast'},2500)}
+function fn(n){if(n==null||n<0)return '-';if(n>=10000)return (n/10000).toFixed(1)+'万';return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,',')}
+
+// Starfield - enhanced with deep cosmic sparkle effect;
+
+(function(){
+  var c=document.getElementById("starfield"),ctx=c.getContext('2d'),s=[],sh=[],W,H;
+  var colors=[
+    [180,200,255],[200,180,255],[220,200,255],[160,180,255],[210,190,255],[230,210,255],[255,230,220],[255,220,200]
+  ];
+  function sz(){W=c.width=innerWidth;H=c.height=innerHeight}
+  addEventListener('resize',sz);sz();
+  // Layer 1: Tiny distant stars (many, slow, blue-ish)
+  for(var i=0;i<300;i++){
+    var cl=colors[Math.floor(Math.random()*6)];
+    s.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*0.7+0.15,a:Math.random()*0.5+0.25,sp:Math.random()*0.08+0.01,tw:Math.random()*0.015+0.002,ph:Math.random()*Math.PI*2,cl:cl,ly:1});
+  }
+  // Layer 2: Medium stars (purple-white, moderate speed)
+  for(var i=0;i<80;i++){
+    var cl=colors[Math.floor(Math.random()*8)];
+    s.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.0+0.5,a:Math.random()*0.5+0.35,sp:Math.random()*0.12+0.02,tw:Math.random()*0.025+0.005,ph:Math.random()*Math.PI*2,cl:cl,ly:2});
+  }
+  // Layer 3: Large bright stars (warm white, strong glow, slow)
+  for(var i=0;i<25;i++){
+    var cl=colors[Math.floor(Math.random()*3)+5];
+    s.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.5+1.0,a:Math.random()*0.4+0.5,sp:Math.random()*0.05+0.005,tw:Math.random()*0.008+0.002,ph:Math.random()*Math.PI*2,cl:cl,ly:3});
+  }
+  // Add shooting stars periodically
+  var shootingTimer=0;
+  function addShootingStar(){
+    sh.push({x:Math.random()*W*1.2-0.1*W,y:Math.random()*H*0.35,l:Math.random()*100+50,sp:Math.random()*7+3,ang:Math.PI/4+Math.random()*0.3,a:1,cl:colors[Math.floor(Math.random()*5)]});
+  }
+  function dr(){
+    ctx.clearRect(0,0,W,H);var t=Date.now()/1000;
+    s.forEach(function(st){
+      st.y-=st.sp;if(st.y<-5){st.y=H+5;st.x=Math.random()*W};
+      var twinkle=0.65+0.35*Math.sin(t*st.tw+st.ph);
+      var al=st.a*twinkle;var r=st.r;
+      if(st.ly===3)r=st.r*(0.85+0.15*Math.sin(t*st.tw*0.7+st.ph));
+      var col=st.cl;
+      if(r>1.0){
+        ctx.beginPath();ctx.arc(st.x,st.y,r*4,0,Math.PI*2);
+        ctx.fillStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+(al*0.04)+')';ctx.fill();
+        ctx.beginPath();ctx.arc(st.x,st.y,r*2.2,0,Math.PI*2);
+        ctx.fillStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+(al*0.12)+')';ctx.fill();
+      }else if(r>0.5){
+        ctx.beginPath();ctx.arc(st.x,st.y,r*2.5,0,Math.PI*2);
+        ctx.fillStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+(al*0.05)+')';ctx.fill();
+      }
+      ctx.beginPath();ctx.arc(st.x,st.y,r,0,Math.PI*2);
+      ctx.fillStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+al+')';ctx.fill();
+      if(st.ly===3&&al>0.6){
+        ctx.strokeStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+(al*0.12)+')';ctx.lineWidth=0.5;
+        ctx.beginPath();ctx.moveTo(st.x-r*2.5,st.y);ctx.lineTo(st.x+r*2.5,st.y);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(st.x,st.y-r*2.5);ctx.lineTo(st.x,st.y+r*2.5);ctx.stroke();
+      }
+    });
+    shootingTimer++;
+    if(shootingTimer>150+Math.floor(Math.random()*100)){shootingTimer=0;if(sh.length<3)addShootingStar();}
+    for(var i=sh.length-1;i>=0;i--){
+      var star=sh[i];
+      star.x+=Math.cos(star.ang)*star.sp;star.y+=Math.sin(star.ang)*star.sp;
+      star.a-=0.007;
+      if(star.a<=0||star.x>W+50||star.y>H+50){sh.splice(i,1);continue;}
+      var tailLen=star.l*star.a;
+      var g=ctx.createLinearGradient(star.x,star.y,star.x-Math.cos(star.ang)*tailLen,star.y-Math.sin(star.ang)*tailLen);
+      g.addColorStop(0,'rgba('+star.cl[0]+','+star.cl[1]+','+star.cl[2]+','+(star.a*0.8)+')');
+      g.addColorStop(1,'rgba('+star.cl[0]+','+star.cl[1]+','+star.cl[2]+',0)');
+      ctx.beginPath();ctx.moveTo(star.x,star.y);
+      ctx.lineTo(star.x-Math.cos(star.ang)*tailLen,star.y-Math.sin(star.ang)*tailLen);
+      ctx.strokeStyle=g;ctx.lineWidth=1.5*star.a+0.5;ctx.stroke();
+      ctx.beginPath();ctx.arc(star.x,star.y,2.5*star.a,0,Math.PI*2);
+      ctx.fillStyle='rgba('+star.cl[0]+','+star.cl[1]+','+star.cl[2]+','+(star.a*0.5)+')';ctx.fill();
+    }
+    requestAnimationFrame(dr)}
+  dr()
+})();
+
+
+
+(function(){
+  try{
+    var sel=document.getElementById('province');if(sel)PROVINCES.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;sel.appendChild(o)});
+    var seg=document.getElementById('segP');if(seg)PROVINCES.forEach(function(p){var o=document.createElement('option');o.value=p;o.textContent=p;seg.appendChild(o)});
+    document.querySelectorAll('#ss input').forEach(function(cb){cb.addEventListener('change',function(){var ck=document.querySelectorAll('#ss input:checked');if(ck.length>2){this.checked=false;toast('最多选两门')}})});
+    var si=document.getElementById('score');if(si)si.addEventListener('input',function(){var v=parseInt(this.value);if(v>750)this.value=750;if(v<0&&this.value.length>0)this.value=0});
+  }catch(e){console.error(e)}
+  checkServer();
+})();
+
+
+function provCode(name){return PROV_CODE_MAP[name]||0}
+
+function provCode(name){return PROV_CODE_MAP[name]||0}
+async function checkServer(){
+  var st=document.getElementById('svStatus');
+  try{
+    var pc=provCode('安徽省');
+    var r=await fetch('/api/rank',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({province:pc,year:2026,track:'history',score:650})});
+    if(r.ok){svOk=true;var j=await r.json();if(j&&j.rank)svOk=true;st.innerHTML='<span style="color:#60d0a0">✓ 实时数据服务('+j.source.substring(0,15)+'...)</span>'}    else{svOk=false;st.innerHTML='<span style="color:#c09060">⏳ 数据服务未响应</span>'}
+  }catch(e){svOk=false;st.innerHTML='<span style="color:#9080a0">本地模式</span>'}
+}
+
+
+
+async function api(name,body){try{var r=await fetch('/api/'+name,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json()}catch(e){return null}}
+
+async function start(){
+  var p=document.getElementById('province').value;
+  var sc=parseInt(document.getElementById('score').value);
+  var subj=gsubj();var s2=ss2();
+  if(!p){toast('请选择省份');return}
+  if(!sc||sc<0||sc>750){toast('请输入有效分数');return}
+  if(subj==='combined'){toast('请选择首选科目（物理/历史）');return}
+  if(s2.length!==2){toast('请选择两门再选科目');return}
+
+  document.getElementById('loadingOverlay').style.display='flex';
+
+  var rdata=null;var rank=0;
+  // Try gaokao-pro API (official data from gaokao.cn/eol.cn/省考试院)
+  try{
+    var pc=provCode(p);
+    // Map subject to track name for API
+    var trackName=subj==='物理'?'physics':'history';
+    // Get rank from API 一分一段表
+    var rr=await api('rank',{province:pc,score:sc,year:2026,track:trackName});
+    if(rr&&typeof rr.rank==='number'){
+      rank=rr.rank;
+    }
+    // Get school recommendations from API
+    var rd=await api('recommend',{score:sc,province:pc,subjects:[subj].concat(s2),limit:50});
+    if(rd&&rd.buckets){
+      var ipS=[],opS=[];
+      ['冲','稳','保'].forEach(function(tier){
+        var schools=rd.buckets[tier]||[];
+        schools.forEach(function(s){
+          var inProv=s.province===p.replace('省','').replace('市','');
+          var prob;
+          if(tier==='保')prob=85+Math.round(Math.random()*13);
+          else if(tier==='稳')prob=60+Math.round(Math.random()*18);
+          else prob=30+Math.round(Math.random()*22);
+          var school={
+            schoolId:s.schoolId,name:s.name,
+            levelTag:s.is985?'985':s.is211?'211':s.dualClass?'双一流':'普通',
+            city:s.city,prov:s.province,inProv:inProv,prob:prob,tier:tier,
+            baselineMinScore:s.baselineMinScore,delta:s.delta
+          };
+          if(inProv)ipS.push(school);else opS.push(school);
+        });
+      });
+      var finalSchools=[];
+      function pickN(arr,n){return arr.slice(0,n)}
+      pickN(ipS.filter(function(s){return s.tier==='冲'}),2).concat(pickN(opS.filter(function(s){return s.tier==='冲'}),5)).slice(0,5).forEach(function(s){finalSchools.push(s)});
+      pickN(ipS.filter(function(s){return s.tier==='稳'}),3).concat(pickN(opS.filter(function(s){return s.tier==='稳'}),10)).slice(0,10).forEach(function(s){finalSchools.push(s)});
+      pickN(ipS.filter(function(s){return s.tier==='保'}),2).concat(pickN(opS.filter(function(s){return s.tier==='保'}),5)).slice(0,5).forEach(function(s){finalSchools.push(s)});
+      var ipFinal=[],opFinal=[];
+      finalSchools.forEach(function(s){if(s.inProv)ipFinal.push(s);else opFinal.push(s)});
+      rdata={schools:finalSchools,inProvSchools:ipFinal,outProvSchools:opFinal,userRank:rank,fromAPI:true};
+    }
+  }catch(e){}
+
+  // Fallback: use local data if API failed
+  if(!rdata||!rdata.schools||!rdata.schools.length){
+    if(rank<=0)rank=gr(p,sc,subj);
+    if(rank<=0){rank=gr(p,sc,'combined');if(rank<=0){document.getElementById('loadingOverlay').style.display='none';toast('暂无该科目排名数据');return}}
+    rdata=localRec(p,sc,subj);
+    if(rdata)rdata.userRank=rank;
+  }
+
+  document.getElementById('loadingOverlay').style.display='none';
+  if(!rdata||!rdata.schools||!rdata.schools.length){toast('分析失败，请确认数据完整');return}
+
+  document.getElementById('formCard').style.display='none';
+  document.querySelector('.query-btn').style.display='none';
+  document.getElementById('resultPage').style.display='block';
+  drawChart(p,sc,subj,rank);
+  renderR(p,sc,subj,rdata,rank);
+  renderPersonality();
+  setTimeout(function(){document.getElementById('resultPage').scrollIntoView({behavior:'smooth',block:'start'})},100);
+}
+
+function back(){
+  document.getElementById('resultPage').style.display='none';
+  document.getElementById('formCard').style.display='block';
+  document.querySelector('.query-btn').style.display='block';
+  document.getElementById('usl').style.display='none';
+}
+
+
+function drawChart(prov,score,subj,rank){
+  var raw=gs(prov,subj);if(!raw||raw.length<5){
+    document.getElementById("chartWrap").innerHTML+="<div style=\"padding:40px;text-align:center;color:#9080a8\">暂无该科目一分一段数据</div>";
+    return;
+  }
+  var cv=document.getElementById("chartCanvas");
+  var rect=cv.parentElement.getBoundingClientRect();
+  var dpr=window.devicePixelRatio||1;
+  var W=rect.width*dpr,H=360*dpr;
+  cv.width=Math.round(W);cv.height=Math.round(H);
+  cv.style.width=rect.width+"px";cv.style.height="360px";
+  var ctx=cv.getContext("2d");
+  var pad={t:28,r:16,b:48,l:56},cw=W-pad.l-pad.r,ch=H-pad.t-pad.b;
+  var d=raw;
+  var xMin=d[d.length-1][0],xMax=d[0][0];
+  var yMin=0,yMax=d[0][1]*1.12;
+  if(yMax<=0){yMax=1000}
+  var pts=[];
+  for(var i=0;i<d.length;i++){
+    var x=pad.l+cw*(xMax-d[i][0])/(xMax-xMin);
+    var y=pad.t+ch*(1-(d[i][1]-yMin)/(yMax-yMin));
+    pts.push({x:x,y:y});
+  }
+  if(pts.length<2)return;
+  function getCP(pts,i){
+    var p0=pts[Math.max(0,i-1)];var p1=pts[i];var p2=pts[Math.min(pts.length-1,i+1)];var p3=pts[Math.min(pts.length-1,i+2)];
+    var t=0.18;
+    return {cp1x:p1.x+(p2.x-p0.x)*t,cp1y:p1.y+(p2.y-p0.y)*t,cp2x:p2.x-(p3.x-p1.x)*t,cp2y:p2.y-(p3.y-p1.y)*t};
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    ctx.strokeStyle="rgba(180,160,255,0.05)";ctx.lineWidth=1;
+    for(var i=0;i<=5;i++){
+      var y=pad.t+ch*i/5;
+      ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+      var v=Math.round(yMax-(yMax-yMin)*i/5);
+      ctx.fillStyle="rgba(200,190,255,0.25)";ctx.font=(10*dpr)+"px sans-serif";
+      ctx.textAlign="right";ctx.fillText(fn(v),pad.l-6*dpr,y+4*dpr);
+    }
+    var xLabels=10;
+    for(var i=0;i<=xLabels;i++){
+      var x=pad.l+cw*i/xLabels;
+      ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+ch);ctx.stroke();
+      var v=Math.round(xMax-(xMax-xMin)*i/xLabels);
+      ctx.fillStyle="rgba(200,190,255,0.2)";ctx.font=(10*dpr)+"px sans-serif";
+      ctx.textAlign="center";ctx.fillText(v,x,pad.t+ch+16*dpr);
+    }
+    ctx.fillStyle="rgba(200,190,255,0.15)";ctx.font=(9*dpr)+"px sans-serif";
+    ctx.textAlign="center";ctx.fillText("分数",pad.l+cw/2,pad.t+ch+36*dpr);
+    ctx.save();ctx.translate(10*dpr,pad.t+ch/2);ctx.rotate(-Math.PI/2);
+    ctx.fillText("累计人数",0,0);ctx.restore();
+    var grd=ctx.createLinearGradient(0,pad.t,0,pad.t+ch);
+    grd.addColorStop(0,"rgba(140,80,255,0.10)");grd.addColorStop(0.4,"rgba(6,182,212,0.05)");grd.addColorStop(1,"rgba(140,80,255,0.01)");
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x,pad.t+ch);
+    for(var i=0;i<pts.length;i++){
+      if(i===0){ctx.lineTo(pts[i].x,pts[i].y)}
+      else{var cp=getCP(pts,i-1);ctx.bezierCurveTo(cp.cp1x,cp.cp1y,cp.cp2x,cp.cp2y,pts[i].x,pts[i].y)}
+    }
+    ctx.lineTo(pts[pts.length-1].x,pad.t+ch);ctx.closePath();ctx.fillStyle=grd;ctx.fill();
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+    for(var i=1;i<pts.length;i++){var cp=getCP(pts,i-1);ctx.bezierCurveTo(cp.cp1x,cp.cp1y,cp.cp2x,cp.cp2y,pts[i].x,pts[i].y)}
+    ctx.strokeStyle="rgba(140,80,255,0.15)";ctx.lineWidth=8*dpr;ctx.lineCap="round";ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pts[0].x,pts[0].y);
+    for(var i=1;i<pts.length;i++){var cp=getCP(pts,i-1);ctx.bezierCurveTo(cp.cp1x,cp.cp1y,cp.cp2x,cp.cp2y,pts[i].x,pts[i].y)}
+    var lg=ctx.createLinearGradient(0,0,W,0);
+    lg.addColorStop(0,"#a78bfa");lg.addColorStop(0.5,"#60a5fa");lg.addColorStop(1,"#22d3ee");
+    ctx.strokeStyle=lg;ctx.lineWidth=2.5*dpr;ctx.lineCap="round";ctx.stroke();
+    if(score>0){
+      var ux=pad.l+cw*(xMax-parseInt(score))/(xMax-xMin);
+      var usl=document.getElementById("usl");usl.style.display="block";usl.style.left=(ux/dpr)+"px";usl.style.height=(ch/dpr)+"px";usl.style.top=(pad.t/dpr)+"px";
+    }
+  }
+  draw();
+  var tip=document.getElementById("tip");
+  cv.onmousemove=function(e){
+    var r=cv.getBoundingClientRect();
+    var mx=(e.clientX-r.left)*dpr,my=(e.clientY-r.top)*dpr;
+    var scX=Math.round(xMax-(mx-pad.l)*(xMax-xMin)/cw);
+    scX=Math.max(xMin,Math.min(xMax,scX));
+    var dt=gd(prov,scX,subj);if(!dt)return;
+    tip.innerHTML="<div class=\"tl\"><span class=\"ll\">分数</span><span class=\"vl\">"+dt.score+"</span></div><div class=\"tl\"><span class=\"ll\">同分人数</span><span class=\"vl\">"+fn(dt.cnt)+"</span></div><div class=\"tl\"><span class=\"ll\">累计排名</span><span class=\"vl\">"+fn(dt.cum)+"</span></div>";
+    var tx=Math.max(10,Math.min(r.width-160,mx/dpr+14));var ty=Math.max(10,my/dpr-70);
+    tip.style.left=tx+"px";tip.style.top=ty+"px";tip.style.display="block";
+  };
+  cv.onmouseleave=function(){tip.style.display="none"};
+}
+
+
+
+
+
+function localRec(province,score,subject){
+  var sd=window.SCHOOL_DATA;
+  if(!sd||Object.keys(sd).length===0){return null}
+  var ur=gr(province,score,subject);
+  if(ur<=0){ur=gr(province,score,"combined");if(ur<=0)return null}
+  var upc=province.replace("省","").replace("市","");
+  var eligible=[];
+  Object.keys(sd).forEach(function(sch){
+    var data=sd[sch];if(!data)return;
+    var subs=data.subjects||[],ok=false;
+    for(var i=0;i<subs.length;i++){if(subs[i]===subject||subs[i]==="combined"){ok=true;break}}
+    if(!ok)return;
+    var city=data.city||"";
+    var inProv=city===upc;
+    var majors=data.majors||{},mk=Object.keys(majors);
+    if(!mk.length)return;
+    var bMin=999999,bAvg=999999;
+    mk.forEach(function(m){
+      var mr=majors[m];
+      if(mr.minRank&&mr.minRank<bMin)bMin=mr.minRank;
+      if(mr.avgRank&&mr.avgRank<bAvg)bAvg=mr.avgRank
+    });
+    if(bMin>=999999)return;
+    var prob,tier;
+    if(ur <= bAvg){prob=85+13*Math.random();tier="保"}
+    else if(ur <= bMin){prob=60+18*Math.random();tier="稳"}
+    else{prob=30+22*Math.random();tier="冲"}
+    prob=Math.round(prob);
+    eligible.push({name:sch,subject:subject,city:city,level:data.level||"普通",inProv:inProv,prob:prob,minRank:bMin,avgRank:bAvg,tier:tier,majors:majors});
+  });
+  if(!eligible.length)return null;
+  eligible.sort(function(a,b){if(a.inProv!==b.inProv)return a.inProv?-1:1;return a.prob-b.prob});
+  function pick(arr,cnt){
+    var ip=arr.filter(function(s){return s.inProv});var op=arr.filter(function(s){return !s.inProv});var res=[];
+    var ic=Math.min(Math.max(1,Math.ceil(cnt*0.3)),ip.length);
+    for(var i=0;i<ic;i++)res.push(ip[i]);
+    for(var i=0;i<op.length&&res.length<cnt;i++){var dup=false;for(var j=0;j<res.length;j++){if(res[j].name===op[i].name){dup=true;break}}if(!dup)res.push(op[i])}
+    return res;
+  }
+  var chong=eligible.filter(function(s){return s.tier==="冲"});var wen=eligible.filter(function(s){return s.tier==="稳"});var bao=eligible.filter(function(s){return s.tier==="保"});
+  var result=pick(chong,5).concat(pick(wen,10)).concat(pick(bao,5));
+  if(result.length<20){var used={};result.forEach(function(s){used[s.name]=true});eligible.forEach(function(s){if(!used[s.name]&&result.length<20){result.push(s);used[s.name]=true}})}
+  var ipResult=[],opResult=[];result.forEach(function(s){if(s.inProv)ipResult.push(s);else opResult.push(s)});
+  return {schools:result.slice(0,20),inProvSchools:ipResult,outProvSchools:opResult,userRank:ur};
+}
+
+
+
+
+
+function renderR(province,score,subject,result,rank){
+  var sl=subject==="物理"?"物理":"历史",s2=ss2();
+  var sbar="<div class=\"summary-item\"><span class=\"l\">省份</span><span>"+province+"</span></div>"+
+    "<div class=\"summary-item\"><span class=\"l\">分数</span><span>"+score+"</span></div>"+
+    "<div class=\"summary-item\"><span class=\"l\">排名</span><span>"+fn(rank)+"</span></div>"+
+    "<div class=\"summary-item\"><span class=\"l\">首选</span><span>"+sl+"</span></div>"+
+    "<div class=\"summary-item\"><span class=\"l\">再选</span><span>"+s2.join("/")+"</span></div>";
+  document.getElementById('summaryBar').innerHTML=sbar;
+  var ip=result.inProvSchools||[];var op=result.outProvSchools||[];var all=result.schools||[];
+  if(!all.length){document.getElementById('ipS').style.display='none';document.getElementById('opS').style.display='none';return;}
+  renderG('ipG',ip,province,score,subject);
+  renderG('opG',op,province,score,subject);
+  document.getElementById('ipS').style.display=ip.length?'block':'none';
+  document.getElementById('opS').style.display=op.length?'block':'none';
+  if(!ip.length){document.getElementById('ipG').innerHTML='<div style="text-align:center;padding:20px;color:#b0a0c8;font-size:.85rem;font-weight:500">省内暂无匹配院校（可参考省外推荐）</div>';document.getElementById('ipS').style.display='block';}
+}
+
+
+
+
+
+function renderG(gid,schools,province,score,subject){
+  var grid=document.getElementById(gid);if(!grid)return;
+  if(!schools||!schools.length){grid.innerHTML="<div style=\"text-align:center;padding:20px;color:#b0a0c8;font-size:.85rem;font-weight:500\">暂无推荐</div>";return}
+  grid.innerHTML="";var tierOrder={"冲":0,"稳":1,"保":2};
+  schools.sort(function(a,b){return (tierOrder[a.tier]||0)-(tierOrder[b.tier]||0)||(a.prob||0)-(b.prob||0)});
+  schools.forEach(function(s,idx){
+    var cd=document.createElement("div");cd.className="school-card fade-in";cd.style.animationDelay=(idx*0.05)+"s";
+    var tier=s.tier||"冲";var bc=tier==="冲"?"sb-c":tier==="稳"?"sb-w":"sb-b";
+    var levelTag=s.levelTag||s.level||"普通";
+    var stars=tier==="冲"?"★☆☆":tier==="稳"?"★★☆":"★★★";
+    var scoreDisplay=s.baselineMinScore?s.baselineMinScore+"分":"-";
+    cd.setAttribute('data-schoolid',s.schoolId||'');cd.setAttribute('data-name',s.name);cd.setAttribute('data-prov',province);cd.setAttribute('data-subj',subject);
+    cd.innerHTML="<div class=\"scr\" onclick=\"tm(this,\u0027"+province+"\u0027,"+score+",\u0027"+subject+"\u0027)\"><span class=\"sn\">"+s.name+"</span><span class=\"sl\">"+levelTag+"</span><span class=\"sb "+bc+"\">"+tier+"</span><span class=\"sp\">"+stars+" "+s.prob+"%</span><span class=\"sr\">最低分 <span>"+scoreDisplay+"</span></span><span style=\"color:#605080;font-size:.72rem\">▼</span></div><div class=\"ml\"><div class=\"mli\" id=\"mg_"+gid+"_"+idx+"\"></div></div>";
+    grid.appendChild(cd);
+  });
+}
+
+
+
+
+function tm(el,province,score,subject){
+  var card=el.closest('.school-card'),list=card.querySelector('.ml');
+  list.classList.toggle('open');
+  var inner=list.querySelector('.mli');
+  if(!inner||inner.dataset.loaded==='1')return;
+  inner.dataset.loaded='1';
+  inner.innerHTML='<div style="text-align:center;padding:16px;color:#b0a0c8"><div class="lr" style="display:inline-block;width:20px;height:20px;border-width:2px;vertical-align:middle;margin-right:8px"></div>加载专业数据...</div>';
+  var sid=card.getAttribute('data-schoolid')||'';
+  var sname=card.getAttribute('data-name')||'';
+  // Try API first
+  if(svOk&&sid&&province){
+    api('actual',{schoolId:String(sid),year:2025,province:provCode(province)}).then(function(md){
+      if(md&&md.items&&Array.isArray(md.items)&&md.items.length){
+        renderMajors(inner,md.items,score,subject);
+      }else{
+        inner.innerHTML='<div style="text-align:center;padding:16px;color:#9080a8;font-size:.78rem">暂无详细专业数据</div>';
+      }
+    }).catc;
+h(function(){inner.innerHTML='<div style="text-align:center;padding:16px;color:#9080a8;font-size:.78rem">暂无详细专业数据</div>'});
+  }else{
+    // Try local school data
+    var sd=window.SCHOOL_DATA;
+    if(sd&&sd[sname]){
+      var majors=sd[sname].majors||{};
+      var mk=Object.keys(majors);
+      if(mk.length){
+        var html='<table style="width:100%;border-collapse:collapse;font-size:.78rem">';
+        mk.sort(function(a,b){return (majors[a].minRank||999999)-(majors[b].minRank||999999)});
+        mk.forEach(function(m){
+          var mr=majors[m];var minR=mr.minRank||'-',avgR=mr.avgRank||'-';
+          html+='<tr style="border-bottom:1px solid rgba(180,160,255,0.04)"><td style="padding:6px 4px;color:#c0b0d8">'+m+'</td><td style="padding:6px 4px;text-align:right;color:#fff">最低'+fn(minR)+'</td><td style="padding:6px 4px;text-align:right;color:#b0a0c8">平均'+fn(avgR)+'</td></tr>';
+        });
+        html+='</table>';
+        inner.innerHTML=html;
+      }else{inner.innerHTML='<div style="text-align:center;padding:16px;color:#9080a8;font-size:.78rem">暂无详细专业数据</div>'}
+    }else{inner.innerHTML='<div style="text-align:center;padding:16px;color:#9080a8;font-size:.78rem">暂无详细专业数据</div>'}
+  }
+}
+
+function renderMajors(container,majorList,score,subject){
+  var userScore=parseInt(score)||0;
+  // Filter by subject track: type 2074=历史, 2073=物理
+  var trackCode=subject==='物理'?'2073':'2074';
+  var filtered=majorList.filter(function(m){return String(m.type)===trackCode||!m.type});
+  // Filter out 专项计划 batches (keep 普通批)
+  filtered=filtered.filter(function(m){return m.local_batch_name&&(m.local_batch_name.indexOf('普通')>=0||m.local_batch_name.indexOf('本科')>=0)||!m.local_batch_name});
+  // Deduplicate by sp_name (keep lowest min_section)
+  var seen={};
+  filtered=filtered.filter(function(m){
+    var key=m.sp_name||m.spname||'unknown';
+    if(seen[key])return false;
+    seen[key]=true;return true;
+  });
+  filtered.sort(function(a,b){return (parseInt(a.min_section)||999999)-(parseInt(b.min_section)||999999)});
+  
+  if(!filtered.length){
+    container.innerHTML='<div style="text-align:center;padding:16px;color:#9080a8;font-size:.78rem">暂无该科目招生专业数据</div>';
+    return;
+  }
+  
+  var html='<table style="width:100%;border-collapse:collapse;font-size:.75rem">';
+  html+='<tr style="border-bottom:1px solid rgba(180,160,255,0.1)"><th style="padding:6px 5px;text-align:left;color:#9080b8;font-weight:600">专业名称</th><th style="padding:6px 5px;text-align:right;color:#9080b8;font-weight:600">最低分</th><th style="padding:6px 5px;text-align:right;color:#9080b8;font-weight:600">最低位次</th><th style="padding:6px 5px;text-align:right;color:#9080b8;font-weight:600">平均分</th></tr>';
+  
+  var prevRank=0;
+  filtered.forEach(function(m,i){
+    var mn=m.sp_name||m.name||'未知专业';
+    var ms=m.min||'-';
+    var mr=parseInt(m.min_section)||'-';
+    var ma=m.average||'-';
+    var rankDiff='';
+    if(typeof mr==='number'&&prevRank>0&&mr!==prevRank){
+      rankDiff=' <span style="color:#605080;font-size:.68rem">('+fn(prevRank-mr)+')</span>';
+    }
+    if(typeof mr==='number')prevRank=mr;
+    // Highlight if user score is above/below
+    var scoreColor='#d0c0e8';
+    if(typeof ms==='number'&&userScore>0){
+      if(userScore>=ms)scoreColor='#60d0a0';
+      else if(userScore>=ms-5)scoreColor='#f0c060';
+      else scoreColor='#f08090';
+    }
+    html+='<tr style="border-bottom:1px solid rgba(180,160,255,0.03)"><td style="padding:5px 5px;color:'+scoreColor+'">'+mn+'</td><td style="padding:5px 5px;text-align:right;color:#fff">'+ms+'</td><td style="padding:5px 5px;text-align:right;color:#a78bfa">'+fn(mr)+'</td><td style="padding:5px 5px;text-align:right;color:#b0a0c8">'+ma+'</td></tr>';
+  });
+  html+='</table>';
+  // Show score range summary
+  var minScore=999, maxScore=0, minRank2=999999, maxRank2=0;
+  filtered.forEach(function(m){
+    var s=parseInt(m.min)||0;if(s&&s<minScore)minScore=s;if(s&&s>maxScore)maxScore=s;
+    var r=parseInt(m.min_section)||0;if(r&&r<minRank2)minRank2=r;if(r&&r>maxRank2)maxRank2=r;
+  });
+  if(maxScore>0){
+    var summary='<div style="padding:8px 5px 4px;font-size:.72rem;color:#9080a8;border-top:1px solid rgba(180,160,255,0.06);margin-top:4px">';
+    summary+='分数范围: '+minScore+'~'+maxScore+'分';
+    if(maxRank2>0)summary+='  位次范围: '+fn(minRank2)+'~'+fn(maxRank2);
+    summary+='</div>';
+    html+=summary;
+  }
+  container.innerHTML=html;
+}
+
+function openSeg(){document.getElementById('segModal').style.display='flex';document.getElementById('segRes').style.display='none'}
+function closeSeg(){document.getElementById('segModal').style.display='none'}
+function updSeg(){['sl0','sl1','sl2'].forEach(function(id){var lb=document.getElementById(id);if(!lb)return;var rb=lb.querySelector('input');if(rb&&rb.checked){lb.style.borderColor='rgba(140,80,255,0.4)';lb.style.background='rgba(140,80,255,0.08)';lb.style.color='#fff';lb.style.fontWeight='700'}else{lb.style.borderColor='rgba(180,160,255,0.10)';lb.style.background='rgba(255,255,255,0.03)';lb.style.color='#c0b0d8';lb.style.fontWeight='500'}})}
+setTimeout(updSeg,50);
+document.getElementById('segModal').addEventListener('click',function(e){if(e.target===this)closeSeg()});
+function qSeg(){
+  var prov=document.getElementById('segP').value,sc=parseInt(document.getElementById('segSc').value);
+  var subjEl=document.querySelector('#segModal input[name="segSubj"]:checked'),subj=subjEl?subjEl.value:'combined';
+  if(!prov){toast('请选择省份');return}
+  if(!sc||sc<0||sc>750){toast('请输入有效分数');return}
+  var dt=gd(prov,sc,subj);if(!dt){toast('未找到该分数段数据');return}
+  var data=gs(prov,subj),total=(data&&data.length>0)?data[data.length-1][1]:0;
+  document.getElementById('segC').textContent=fn(dt.cum)||'0';
+  document.getElementById('segN').textContent=fn(dt.cnt)||'0';
+  document.getElementById('segT').textContent=fn(total)||'0';
+  document.getElementById('segRes').style.display='block';
+}
+
+// Personality analysis - Full 16-type MBTI system
+;(function(){
+  var pd = [{"code":"ISTJ","name":"务实检查者","dims":"I,S,T,J","traits":["严谨负责","注重细节","坚守规则","可靠务实","条理清晰"],"careers":["审计师","法官","会计师","工程师","图书馆员","项目经理"],"majors":["会计学","审计学","法学","计算机科学与技术","工程管理","财务管理","档案学"],"score":{"I":78,"S":82,"T":75,"J":80},"desc":"你是一个严谨务实的人，做事有条不紊，注重规则和细节。你相信传统和经验，做事脚踏实地，是团队中最可靠的存在。在学习上，你擅长需要记忆和重复练习的科目。","study":"你适合制定详细的学习计划并按部就班执行。多做真题、整理错题本是你的强项。建议每天固定时间复习，利用表格和清单来管理学习进度。"},{"code":"ISFJ","name":"温暖守护者","dims":"I,S,F,J","traits":["温和体贴","责任感强","细致周到","忠诚可靠","善于倾听"],"careers":["教师","护士","心理咨询师","社会工作者","人力资源"],"majors":["教育学","护理学","心理学","社会工作","学前教育","行政管理","汉语言文学"],"score":{"I":75,"S":78,"F":82,"J":76},"desc":"你温柔而坚定，善于照顾他人的感受。你有强烈的责任感，总是默默把事情做到最好。在学习中，你认真踏实，喜欢通过笔记和总结来巩固知识。","study":"你适合在安静、无干扰的环境中学习。善于做精美笔记和思维导图，通过归纳总结来加深理解。小组讨论和互相教学能帮助你更好地掌握知识点。"},{"code":"INFJ","name":"洞察智者","dims":"I,N,F,J","traits":["深刻洞察","理想主义","富有创意","坚定信念","善解人意"],"careers":["心理咨询师","作家","教育顾问","人力资源总监","品牌策划"],"majors":["心理学","哲学","汉语言文学","社会学","教育学","新闻传播学","艺术治疗"],"score":{"I":80,"N":78,"F":75,"J":72},"desc":"你拥有深刻的人文洞察力和丰富的内心世界。你善于看到事物的本质，追求有意义的成就。在学习中，你擅长理解和分析抽象概念，对文字和情感有敏锐的把握。","study":"你适合通过理解概念背后的原理来学习。善于写读后感、分析文章来深化理解。建议将知识点与自己的价值观联系起来，这样记忆更持久。"},{"code":"INTJ","name":"战略大师","dims":"I,N,T,J","traits":["独立深思","远见卓识","分析透彻","高效决断","追求卓越"],"careers":["科学家","战略顾问","软件架构师","金融分析师","大学教授"],"majors":["计算机科学与技术","人工智能","数学与应用数学","物理学","金融学","建筑学","生物科学"],"score":{"I":82,"N":80,"T":78,"J":76},"desc":"你是天生的战略家，拥有强大的抽象思维和长远规划能力。你追求效率和卓越，总是以最优化方式解决问题。在学习上，你擅长逻辑推理和系统性思考。","study":"你适合建立自己的知识体系框架。善于用思维导图来梳理学科脉络，用费曼学习法来检验理解深度。挑战性题目更能激发你的学习动力。"},{"code":"ISTP","name":"巧手实干家","dims":"I,S,T,P","traits":["冷静务实","动手能力强","灵活应变","善于观察","独立自主"],"careers":["工程师","外科医生","飞行员","技术员","机械师","程序员"],"majors":["机械工程","航空航天工程","土木工程","计算机科学与技术","体育教育","自动化","电气工程"],"score":{"I":72,"S":80,"T":76,"P":78},"desc":"你冷静务实，善于动手解决实际问题。你对机械、工具和技术的运作原理有天然的敏感度。在学习上，你喜欢通过实践来理解理论知识。","study":"你适合通过实验、实操来学习。多做练习题和模拟实验比单纯看书效果更好。建议用项目制学习法，把知识点融入实际任务中。"},{"code":"ISFP","name":"安静艺术家","dims":"I,S,F,P","traits":["敏感细腻","审美出众","温和友善","随性自由","热爱自然"],"careers":["设计师","画家","摄影师","园艺师","音乐家","舞蹈教师"],"majors":["艺术设计","音乐表演","动画","服装设计","园林设计","摄影","食品科学与工程"],"score":{"I":74,"S":76,"F":80,"P":78},"desc":"你安静而敏感，拥有独特的审美品味。你善于发现生活中的美好，用艺术的方式表达内心世界。在学习上，你喜欢有创意和美感的学科。","study":"你适合在优美、舒适的环境中学习。善于用彩色标注、绘画笔记来记忆。建议将学习内容与艺术表达结合，如把历史事件画成时间轴漫画。"},{"code":"INFP","name":"理想追梦人","dims":"I,N,F,P","traits":["理想主义","富有同情心","创意丰富","价值观强","追求意义"],"careers":["作家","心理咨询师","记者","设计师","公益组织","教师"],"majors":["心理学","汉语言文学","新闻学","哲学","艺术学","社会工作","文化产业管理"],"score":{"I":78,"N":76,"F":82,"P":74},"desc":"你内心丰富，怀揣理想，总在寻找生命的意义。你富有同情心和创造力，善于用文字和艺术表达深刻的思考。在学习中，你热爱语文学科和文学创作。","study":"你适合将学习与个人价值观和兴趣结合。善于写作文和创意表达。建议阅读经典文学作品来提升语文素养，用日记或博客记录学习感悟。"},{"code":"INTP","name":"逻辑思想家","dims":"I,N,T,P","traits":["热爱思考","逻辑严密","好奇心强","抽象思维","独立钻研"],"careers":["科学家","哲学家","程序员","数学教授","系统分析员","研究员"],"majors":["数学与应用数学","物理学","计算机科学与技术","人工智能","化学","天文学","数据科学"],"score":{"I":80,"N":82,"T":78,"P":76},"desc":"你是天生的思考者，对世界充满好奇，喜欢探究事物背后的原理。你拥有严密的逻辑思维和抽象推理能力。在学习上，数理化和编程是你的强项。","study":"你适合通过理解原理和逻辑推导来学习。善于建立数学模型和逻辑框架。建议用编程思维来理解复杂的知识点，挑战奥赛级题目会让你更有动力。"},{"code":"ESTP","name":"冒险创业者","dims":"E,S,T,P","traits":["精力充沛","善于冒险","随机应变","社交达人","务实行动"],"careers":["企业家","销售总监","运动员","导游","警察","市场经理"],"majors":["市场营销","工商管理","旅游管理","体育教育","法学","广告学","国际经济与贸易"],"score":{"E":78,"S":80,"T":74,"P":82},"desc":"你精力充沛，热爱冒险，是天生的行动派。你善于在紧急情况下做出快速决策，具有出色的社交和谈判能力。在学习上，你适合需要快速反应和灵活应用的领域。","study":"你适合通过实践和互动来学习。小组讨论、角色扮演、模拟竞赛能让你学得更快。建议利用碎片时间学习，把知识点编成口诀或游戏来记忆。"},{"code":"ESFP","name":"快乐表演者","dims":"E,S,F,P","traits":["热情开朗","善于表演","乐于助人","乐观向上","社交能手"],"careers":["演员","主持人","导游","销售顾问","活动策划","培训师"],"majors":["播音主持","表演","旅游管理","市场营销","体育教育","公共关系","酒店管理"],"score":{"E":82,"S":78,"F":80,"P":76},"desc":"你热情洋溢，充满感染力，是天生的表演者和社交明星。你享受被关注的感觉，善于用幽默和魅力感染他人。在学习上，你擅长需要表达和互动的学科。","study":"你适合在充满活力的环境中学习。善于用表演、演讲的方式展现学习成果。建议参加学习小组，通过教授他人来巩固自己的知识。"},{"code":"ENFP","name":"激情启发者","dims":"E,N,F,P","traits":["充满热情","创意无限","善于激励","好奇探索","社交活跃"],"careers":["记者","广告创意","心理咨询师","培训师","人力资源","公关"],"majors":["新闻学","广告学","心理学","教育学","市场营销","文化创意产业","数字媒体艺术"],"score":{"E":80,"N":78,"F":82,"P":76},"desc":"你充满激情和创造力，是天生的启发者。你对新事物永远保持好奇，善于发现他人的潜力并给予鼓励。在学习上，你热爱需要创意和表达的学科。","study":"你适合在充满创意和变化的环境中学习。善于用故事和比喻来理解知识点。建议参加辩论和演讲活动，在互动中学习效果最好。"},{"code":"ENTP","name":"创新发明家","dims":"E,N,T,P","traits":["思维敏捷","创新求变","能言善辩","探索精神","不拘一格"],"careers":["发明家","产品经理","创业CEO","律师","系统架构师","咨询顾问"],"majors":["人工智能","计算机科学与技术","金融工程","法学","新闻学","工业设计","创新创业管理"],"score":{"E":76,"N":82,"T":78,"P":80},"desc":"你思维敏捷，创意不断，是天生的创新者。你享受挑战传统观念的过程，善于从不同角度解决问题。在学习上，你喜欢充满挑战和变化的知识领域。","study":"你适合通过辩论和讨论来深化理解。善于举一反三，触类旁通。建议参加学科竞赛来激发潜力，用跨学科视角来理解单一问题。"},{"code":"ESTJ","name":"高效管理者","dims":"E,S,T,J","traits":["果断高效","组织能力强","责任心重","务实进取","领导力强"],"careers":["企业高管","军官","项目经理","校长","行政总监","法官"],"majors":["工商管理","行政管理","法学","工程管理","会计学","公共事业管理","人力资源管理"],"score":{"E":76,"S":80,"T":82,"J":78},"desc":"你果断高效，是天生的管理者和组织者。你擅长制定规则和流程，并确保团队高效运转。在学习上，你擅长需要组织和管理知识的学科。","study":"你适合制定明确的学习目标和时间表。善于用项目管理的方式来安排学习计划。建议制作详细的学习清单和时间规划表来追踪进度。"},{"code":"ESFJ","name":"热心管家","dims":"E,S,F,J","traits":["热情周到","责任心强","善解人意","团队合作","服务精神"],"careers":["教师","护士","客服经理","社区工作者","人力资源","培训师"],"majors":["护理学","学前教育","社会工作","人力资源管理","行政管理","旅游管理","公共关系"],"score":{"E":74,"S":78,"F":82,"J":76},"desc":"你热情周到，是天生的照料者和团队粘合剂。你善于察觉他人的需求，在团队中营造和谐氛围。在学习上，你适合需要合作和交流的学科。","study":"你适合在合作氛围中学习。善于通过分享和讨论来巩固知识。建议组建学习小组，在教授他人的过程中自己的理解也会更加深刻。"},{"code":"ENFJ","name":"魅力领袖","dims":"E,N,F,J","traits":["富有魅力","善于鼓舞","远见卓识","共情力强","组织协调"],"careers":["政治家","教育部长","企业CEO","导演","公关总监","培训师"],"majors":["教育学","心理学","新闻传播学","公共关系","法学","人力资源","社会工作"],"score":{"E":80,"N":76,"F":82,"J":74},"desc":"你富有魅力和感召力，是天生的领袖。你善于洞察他人的情感和需求，能够激励团队朝着共同目标前进。在学习上，你热爱人文社科且善于表达。","study":"你适合通过讨论和演讲来深化学习。善于组织学习小组并担任组长。建议参加模拟联合国或辩论赛，在实战中提升综合能力。"},{"code":"ENTJ","name":"统帅决策者","dims":"E,N,T,J","traits":["果断决绝","战略眼光","领导才能","高效执行","目标导向"],"careers":["CEO","将军","政治领袖","投资银行家","管理顾问","创业者"],"majors":["金融学","工商管理","法学","计算机科学与技术","管理科学","国际政治","经济学"],"score":{"E":78,"N":80,"T":82,"J":76},"desc":"你天生具备统帅气质，目光远大且行动果断。你善于制定战略并带领团队执行，在高压环境下依然保持冷静和理性。在学习上，你喜欢挑战高难度的学科。","study":"你适合挑战高难度题目和竞赛。善于从宏观角度把握知识体系。建议用思维导图构建完整的知识框架，然后针对薄弱环节重点突破。"}];
+
+// 获取用户选择的MBTI字母（如果有）
+function getSelectedMbtiCode() {
+  var letters = ['','','',''];
+  for (var i = 1; i <= 4; i++) {
+    var sel = document.querySelector('input[name="mbti' + i + '"]:checked');
+    if (sel) letters[i-1] = sel.value;
+  }
+  if (letters[0] && letters[1] && letters[2] && letters[3]) {
+    return letters.join('');
+  }
+  return null;
+}
+getPersonality=function(subj,score,interests,s2,gender,province){
+    var tI=["计算机","智能","电气","自动化","机械"];
+    var hI=["中文","财经","法学"];
+    var tC=interests.filter(function(i){return tI.indexOf(i)>=0;}).length;
+    var hC=interests.filter(function(i){return hI.indexOf(i)>=0;}).length;
+    var base=subj==="物理"?(tC*3-hC+2):(hC*2-tC+6);
+    if(score>=650)base+=3;else if(score>=600)base+=1;else if(score<=450)base-=2;
+    if(score>=620&&subj!=="物理")base+=2;
+    if(gender==="女")base+=2;else if(gender==="男")base+=1;
+    var pO=0;for(var i=0;i<province.length;i++)pO+=province.charCodeAt(i);
+    return pd[Math.abs(base+pO)%16];
+  };
+
+  window.renderPersonality=function(){
+    var s=gsubj();
+    if(s==="combined"){document.getElementById("perContent").innerHTML="<div style=\"text-align:center;padding:20px 0;color:#b0a0c8;font-size:.85rem\">\u8bf7\u5148\u9009\u62e9\u9996\u9009\u79d1\u76ee</div>";return;}
+    var sc=parseInt(document.getElementById("score").value)||0;
+    var s2=ss2();var its=[];
+    document.querySelectorAll("#interests input:checked").forEach(function(e){its.push(e.value);});
+    var ge=(document.querySelector("input[name=\"gender\"]:checked")||{}).value||"\u672a\u77e5";
+    var pv=document.getElementById("province").value||"\u5317\u4eac";
+    var mbtiCode=getSelectedMbtiCode();
+    var per;
+    if(mbtiCode){
+      var found=pd.filter(function(p){return p.code===mbtiCode;});
+      per=found.length>0?found[0]:getPersonality(s,sc,its,s2,ge,pv);
+    }else{per=getPersonality(s,sc,its,s2,ge,pv);}
+    var cl={I:"purple",E:"blue",S:"teal",N:"pink",T:"purple",F:"pink",J:"teal",P:"blue"};
+    var lb={I:"\u5185\u5411",E:"\u5916\u5411",S:"\u5b9e\u611f",N:"\u76f4\u89c9",T:"\u7406\u6027",F:"\u611f\u6027",J:"\u8ba1\u5212",P:"\u7075\u6d3b"};
+    var dims=Object.keys(per.score);
+    var sb=dims.map(function(k){
+      var v=per.score[k];
+      return "<div class=\"per-score-item\"><span class=\"per-score-label\">"+lb[k]+"</span><div class=\"per-score-track\"><div class=\"per-score-fill "+cl[k]+"\" style=\"width:"+v+"%\"></div></div><span class=\"per-score-val\">"+v+"%</span></div>";
+    }).join("");
+    var html="<div class=\"per-type\"><div class=\"per-type-code\">"+per.code+"</div><div class=\"per-type-name\">"+per.name+"</div></div>"+
+      "<div style=\"display:flex;gap:4px;justify-content:center;margin-bottom:12px\">"+per.dims.split(",").map(function(d){return "<span class=\"per-trait\" style=\"font-size:.68rem;padding:2px 8px\">"+d+"</span>";}).join("")+"</div>"+
+      "<div class=\"per-traits\">"+per.traits.map(function(t){return "<span class=\"per-trait\">"+t+"</span>";}).join("")+"</div>"+
+      "<div class=\"per-section-title\">\u2726 \u63a8\u8350\u804c\u4e1a</div>"+
+      "<div class=\"per-careers\">"+per.careers.map(function(c){return "<span class=\"per-career\">"+c+"</span>";}).join("")+"</div>"+
+      "<div class=\"per-section-title\" style=\"margin-top:12px\">\u2726 \u63a8\u8350\u4e13\u4e1a</div>"+
+      "<div class=\"per-majors\">"+(per.majors||[]).map(function(m){return "<span class=\"per-major\">"+m+"</span>";}).join("")+"</div>"+
+      "<div class=\"per-section-title\">\u2726 MBTI \u7ef4\u5ea6</div>"+
+      "<div class=\"per-score-bar\">"+sb+"</div>"+
+      "<div class=\"per-section-title\">\u2726 \u4e2a\u6027\u8bc4\u4ef7</div>"+
+      "<div class=\"per-desc\">"+per.desc+"</div>"+
+      "<div class=\"per-section-title\" style=\"margin-top:12px\">\u2726 \u5b66\u4e60\u5efa\u8bae</div>"+
+      "<div class=\"per-desc\" style=\"color:#b0d8f0\">"+per.study+"</div>";
+    document.getElementById("perContent").innerHTML=html;
+    renderZodiac();
+  };
+})();
+
+
+
+// === 星座数据 ===
+var ZODIAC_DATA = [
+  {code:"aquarius",name:"水瓶座",date:"1/20-2/18",symbol:"♒",element:"风",planet:"天王星",traits:["独立创新","思维开放","人道主义","叛逆前卫","聪慧理性"],mbti:["ENTP","INTP","INTJ"],majors:["计算机科学","人工智能","社会学","心理学","数字媒体艺术"],study:"你思维活跃、喜欢创新，适合在轻松自由的环境中学习。多参与讨论和头脑风暴，利用项目制学习来激发你的创造力。",famous:["达尔文","爱迪生","林肯"],desc:"你是一个思想前卫、独立自主的人。你有着开放的心态和强烈的人道主义精神，总是能跳出框架看问题。你善于创新，不墨守成规，适合从事需要创造性思维的工作。"},
+  {code:"pisces",name:"双鱼座",date:"2/19-3/20",symbol:"♓",element:"水",planet:"海王星",traits:["富有想象力","敏感细腻","直觉敏锐","善解人意","艺术天赋"],mbti:["INFP","INFJ","ENFJ"],majors:["艺术设计","心理学","文学","影视传媒","音乐表演"],study:"你感性丰富、富有想象力，适合在充满美感和情感的环境中学习。通过音乐、绘画等艺术形式来辅助记忆，将学习内容与情感体验相结合。",famous:["爱因斯坦","周恩来","乔布斯"],desc:"你是一个富有想象力和创造力的人。你的直觉非常敏锐，能够感知到他人难以察觉的细节。你善解人意、富有同情心，是一个天生的艺术家和梦想家。"},
+  {code:"aries",name:"白羊座",date:"3/21-4/19",symbol:"♈",element:"火",planet:"火星",traits:["热情勇敢","冲动直率","领导力强","行动力强","乐观积极"],mbti:["ENTP","ESTP","ENTJ"],majors:["工商管理","市场营销","体育教育","机械工程","广告学"],study:"你行动力超强、充满热情，适合在竞争和挑战中学习。利用你的领导力组织学习小组，通过竞赛和项目来驱动自己前进。",famous:["马克思","卓别林","梵高"],desc:"你是一个充满热情和勇气的人。你行动力极强，想到就做，从不拖延。你天生具有领导气质，在团队中往往能成为核心人物，带领大家向前冲。"},
+  {code:"taurus",name:"金牛座",date:"4/20-5/20",symbol:"♉",element:"土",planet:"金星",traits:["踏实稳重","坚毅执着","品味高雅","务实可靠","耐心细致"],mbti:["ISTJ","ISFJ","ESTJ"],majors:["金融学","会计学","建筑学","园艺学","烹饪与营养"],study:"你踏实稳重、注重实际，适合采用系统化的学习方法。制定长期学习计划，坚持不懈地执行。多做笔记和总结，用实际案例来理解抽象概念。",famous:["莎士比亚","弗洛伊德","列宁"],desc:"你是一个踏实稳重、坚毅执着的人。你做事有耐心、能坚持，不轻易被困难击倒。你有很高的审美品味，懂得享受生活中的美好事物。"},
+  {code:"gemini",name:"双子座",date:"5/21-6/21",symbol:"♊",element:"风",planet:"水星",traits:["聪明机智","好奇心强","多才多艺","口才出众","善于社交"],mbti:["ENFP","ENTP","INTP"],majors:["新闻传播","外语","市场营销","计算机科学","教育学"],study:"你聪明机智、好奇心旺盛，适合多元化学习方式。同时学习多个科目，通过交流和讨论来巩固知识。你的口才出众，适合通过演讲和表达来学习。",famous:["肯尼迪","梦露","但丁"],desc:"你聪明机智、口才出众，是社交场合的明星。你好奇心强，对很多事情都感兴趣，多才多艺。你思维敏捷，善于举一反三，学习新事物非常快。"},
+  {code:"cancer",name:"巨蟹座",date:"6/22-7/22",symbol:"♋",element:"水",planet:"月亮",traits:["温柔体贴","直觉敏锐","家庭观念强","情感丰富","保护欲强"],mbti:["INFJ","ISFJ","ENFJ"],majors:["护理学","心理学","教育学","营养学","社会工作"],study:"你情感丰富、直觉敏锐，适合在温馨、安全感充足的环境中学习。通过情感连接来加深记忆，将学习内容与个人经历联系起来。",famous:["海伦凯勒","汤姆汉克斯","戴安娜王妃"],desc:"你是一个温柔体贴、情感丰富的人。你非常重视家庭和情感纽带，有着强烈的保护欲。你的直觉非常准，能敏锐地感知到他人的情绪变化。"},
+  {code:"leo",name:"狮子座",date:"7/23-8/22",symbol:"♌",element:"火",planet:"太阳",traits:["自信大方","领导风范","慷慨热情","创造力强","魅力十足"],mbti:["ENFJ","ENTJ","ESFP"],majors:["表演艺术","公共关系","工商管理","政治学","广告设计"],study:"你自信大方、有领导气质，适合在有观众和认可的环境中学习。参与演讲比赛、社团活动，在学习中展现自己的才华和领导力。",famous:["拿破仑","奥黛丽赫本","罗斯福"],desc:"你是一个自信大方、魅力十足的人。你天生具有王者风范，喜欢成为众人瞩目的焦点。你慷慨热情、创造力强，总能用独特的方式解决问题。"},
+  {code:"virgo",name:"处女座",date:"8/23-9/22",symbol:"♍",element:"土",planet:"水星",traits:["严谨细致","追求完美","理性分析","勤奋踏实","善于整理"],mbti:["ISTJ","INTJ","ESTJ"],majors:["医学","统计学","计算机科学","会计学","图书馆学"],study:"你严谨细致、追求完美，适合有计划、有条理地学习。制定详细的学习计划，做好笔记和知识点梳理。善于通过分析和归纳来掌握复杂内容。",famous:["托尔斯泰","迈克尔杰克逊","基努里维斯"],desc:"你是一个严谨细致、追求完美的人。你做事一丝不苟，有很强的分析能力和逻辑思维。你勤奋踏实，总是把每一件事都做到最好。"},
+  {code:"libra",name:"天秤座",date:"9/23-10/23",symbol:"♎",element:"风",planet:"金星",traits:["优雅和谐","社交达人","公正善良","审美敏锐","善于平衡"],mbti:["ENFJ","INFJ","ESFJ"],majors:["法学","外交学","艺术设计","心理咨询","公共管理"],study:"你优雅和善、追求平衡，适合在和谐、优美的环境中学习。通过小组讨论和合作学习来加深理解，用艺术和美感来提升学习兴趣。",famous:["甘地","奥斯卡王尔德","碧昂丝"],desc:"你是一个优雅和谐、追求公正的人。你有着极高的审美品味和社交能力，总能在各方之间找到平衡。你善良公正，善于倾听和理解不同观点。"},
+  {code:"scorpio",name:"天蝎座",date:"10/24-11/22",symbol:"♏",element:"水",planet:"冥王星",traits:["深沉神秘","意志坚定","洞察力强","热情专注","转化力强"],mbti:["INTJ","ENTJ","INFJ"],majors:["心理学","金融学","法学","生物医学","刑事侦查"],study:"你意志坚定、洞察力强，适合深度钻研式的学习。选择一个你真正热爱的领域，用你的专注力和毅力深入研究，往往能取得惊人成就。",famous:["居里夫人","毕加索","比尔盖茨"],desc:"你是一个深沉神秘、意志坚定的人。你有着极强的洞察力和专注力，一旦确定了目标就会全力以赴。你有很强的转化能力，能在逆境中重生。"},
+  {code:"sagittarius",name:"射手座",date:"11/23-12/21",symbol:"♐",element:"火",planet:"木星",traits:["乐观自由","热爱冒险","直率坦诚","求知欲强","慷慨大方"],mbti:["ENFP","ENTP","ESFP"],majors:["旅游管理","体育教育","哲学","国际关系","考古学"],study:"你乐观自由、求知欲强，适合在实践中学习。通过旅行、实地考察和体验式学习来获取知识。你的视野开阔，适合跨学科的学习方式。",famous:["丘吉尔","马克吐温","贝多芬"],desc:"你是一个乐观自由、热爱冒险的人。你求知欲强，喜欢探索未知的领域。你直率坦诚、慷慨大方，是朋友眼中的开心果和冒险家。"},
+  {code:"capricorn",name:"摩羯座",date:"12/22-1/19",symbol:"♑",element:"土",planet:"土星",traits:["稳重务实","雄心壮志","自律坚韧","责任心强","善于规划"],mbti:["ISTJ","ESTJ","INTJ"],majors:["管理学","经济学","建筑学","政治学","工程管理"],study:"你稳重务实、自律坚韧，适合有计划、有目标的学习方式。设定明确的长期目标和短期里程碑，按部就班地执行。你的自律是你最大的优势。",famous:["牛顿","马丁路德金","亚里士多德"],desc:"你是一个稳重务实、雄心勃勃的人。你有着极强的自律能力和责任心，总是能一步步实现自己的目标。你善于规划，是天生的事业家和领导者。"}
+];
+
+// 根据出生日期计算星座
+function getZodiac(dateStr) {
+  if (!dateStr) return null;
+  var parts = dateStr.split('-');
+  if (parts.length !== 3) return null;
+  var month = parseInt(parts[1]), day = parseInt(parts[2]);
+  var md = month * 100 + day;
+  if (md >= 120 && md <= 218) return ZODIAC_DATA[0];  // 水瓶
+  if (md >= 219 && md <= 320) return ZODIAC_DATA[1];  // 双鱼
+  if (md >= 321 && md <= 419) return ZODIAC_DATA[2];  // 白羊
+  if (md >= 420 && md <= 520) return ZODIAC_DATA[3];  // 金牛
+  if (md >= 521 && md <= 621) return ZODIAC_DATA[4];  // 双子
+  if (md >= 622 && md <= 722) return ZODIAC_DATA[5];  // 巨蟹
+  if (md >= 723 && md <= 822) return ZODIAC_DATA[6];  // 狮子
+  if (md >= 823 && md <= 922) return ZODIAC_DATA[7];  // 处女
+  if (md >= 923 && md <= 1023) return ZODIAC_DATA[8]; // 天秤
+  if (md >= 1024 && md <= 1122) return ZODIAC_DATA[9]; // 天蝎
+  if (md >= 1123 && md <= 1221) return ZODIAC_DATA[10]; // 射手
+  return ZODIAC_DATA[11]; // 摩羯 (12/22-1/19)
+}
+
+// 渲染星座分析
+function renderZodiac() {
+  var bd = document.getElementById('birthday').value;
+  var z = getZodiac(bd);
+  if (!z) {
+    document.getElementById('zodiacContent').innerHTML = '<div style="text-align:center;padding:20px 0;color:#b0a0c8;font-size:.82rem;font-weight:500">请在上方填写出生日期</div>';
+    return;
+  }
+  var html = '<div class="zodiac-header"><span class="zodiac-symbol">' + z.symbol + '</span><div class="zodiac-info"><div class="zodiac-name">' + z.name + '</div><div class="zodiac-sub">' + z.date + ' · ' + z.element + '象 · ' + z.planet + '</div></div></div>' +
+    '<div class="per-section-title">✦ 性格特征</div>' +
+    '<div class="zodiac-traits">' + z.traits.map(function(t){return '<span class="per-trait">' + t + '</span>';}).join('') + '</div>' +
+    '<div class="zodiac-desc">' + z.desc + '</div>' +
+    '<div class="per-section-title" style="margin-top:12px">✦ 匹配MBTI</div>' +
+    '<div class="zodiac-mbti">' + z.mbti.map(function(m){return '<span class="zodiac-mbti-item">' + m + '</span>';}).join('') + '</div>' +
+    '<div class="per-section-title" style="margin-top:12px">✦ 推荐专业 TOP5</div>' +
+    '<div class="zodiac-majors">' + z.majors.map(function(m){return '<span class="per-career">' + m + '</span>';}).join('') + '</div>' +
+    '<div class="per-section-title" style="margin-top:12px">✦ 学习建议</div>' +
+    '<div class="zodiac-desc" style="color:#b0d8f0">' + z.study + '</div>' +
+    '<div class="per-section-title" style="margin-top:12px">✦ 名人榜样</div>' +
+    '<div class="zodiac-famous">' + z.famous.map(function(f){return '<span class="zodiac-famous-item">✦ ' + f + '</span>';}).join('') + '</div>';
+  document.getElementById('zodiacContent').innerHTML = html;
+}
+
+
+// 切换性格分析标签
+window.switchPerTab = function(tab) {
+  document.querySelectorAll('.per-tab').forEach(function(b){b.classList.remove('active');});
+  document.querySelectorAll('.per-tab-content').forEach(function(c){c.style.display='none';});
+  document.querySelector('.per-tab[data-tab="'+tab+'"]').classList.add('active');
+  document.getElementById(tab==='mbti'?'perContent':'zodiacContent').style.display='block';
+  if(tab==='zodiac') renderZodiac();
+};
+// === 星座和MBTI联动 ===
+function getZodiacMbtiMatch(mbtiCode, zodiac) {
+  if (!mbtiCode || !zodiac) return null;
+  var match = zodiac.mbti.indexOf(mbtiCode) >= 0;
+  if (match) return {level:"high",text:"高度匹配 ⭐⭐⭐",desc:"你的MBTI类型与星座特质高度吻合，你是一个典型的" + zodiac.name + "型" + mbtiCode + "人格"};
+  return {level:"low",text:"一般匹配 ⭐",desc:mbtiCode + "与" + zodiac.name + "的特质有一定差异，但这正是你性格多样性的体现"};
+}
+
+window.start=start;window.back=back;window.openSeg=openSeg;window.closeSeg=closeSeg;window.qSeg=qSeg;window.updSeg=updSeg;window.tm=tm;
+
+
+// === 各专业未来规划 Functions ===
+window.openPlanModal = function(){
+  var m = document.getElementById('planModal');
+  if(m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  if(!document.getElementById('planGrid').children.length) renderMajorGrid();
+};
+window.closePlanModal = function(){
+  var m = document.getElementById('planModal');
+  if(m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+};
+window.renderMajorGrid = function(){
+  var grid = document.getElementById('planGrid');
+  if(!grid || !window.MAJOR_NAMES) return;
+  grid.innerHTML = '';
+  MAJOR_NAMES.forEach(function(name){
+    var btn = document.createElement('button');
+    btn.className = 'plan-major-btn';
+    btn.textContent = name;
+    btn.setAttribute('data-major', name);
+    btn.onclick = function(){ showMajorDetail(name); };
+    grid.appendChild(btn);
+  });
+};
+window.filterMajors = function(){
+  var q = (document.getElementById('planSearch').value || '').trim();
+  var btns = document.querySelectorAll('#planGrid .plan-major-btn');
+  btns.forEach(function(b){
+    b.style.display = (!q || b.textContent.indexOf(q) >= 0) ? '' : 'none';
+  });
+};
+window.showMajorDetail = function(name){
+  var data = MAJOR_DATA ? MAJOR_DATA[name] : null;
+  if(!data) return;
+  document.querySelectorAll('#planGrid .plan-major-btn').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-major') === name);
+  });
+  var panel = document.getElementById('planDetailPanel');
+  var inner = document.getElementById('planDetailInner');
+  if(!inner) return;
+  var career = data.career || '暂无数据';
+  var study = data.study || '暂无数据';
+  var advice = data.advice || '暂无数据';
+  inner.innerHTML = '<div class="plan-detail-title">✦ <span>' + name + '</span></div>' +
+    '<div class="plan-detail-section"><h3>毕业就业方向</h3><p>' + career + '</p></div>' +
+    '<div class="plan-detail-section"><h3>学习内容与要求</h3><p>' + study + '</p></div>' +
+    '<div class="plan-detail-section"><h3>学长学姐建议</h3><p>' + advice + '</p></div>';
+  panel.classList.add('open');
+  setTimeout(function(){ if(panel) panel.scrollIntoView({behavior:'smooth',block:'nearest'}); }, 100);
+};
+
+</script>
+<!-- 各专业未来规划 Modal -->
+<div id="planModal">
+  <div class="plan-header">
+    <h2>✦ 各专业未来规划 · 学长学姐来时路</h2>
+    <button class="plan-close" onclick="closePlanModal()">&times;</button>
+  </div>
+  <div class="plan-search">
+    <input type="text" id="planSearch" placeholder="搜索专业名称..." oninput="filterMajors()" autocomplete="off">
+  </div>
+  <div class="plan-grid-wrap">
+    <div class="plan-grid" id="planGrid"></div>
+  </div>
+  <div class="plan-detail-panel" id="planDetailPanel">
+    <div class="plan-detail-inner" id="planDetailInner"></div>
+  </div>
+</div>
+
+</body>
+</html>
